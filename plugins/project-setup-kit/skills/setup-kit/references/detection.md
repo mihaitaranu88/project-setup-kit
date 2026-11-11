@@ -8,7 +8,7 @@ A part is a folder with its own manifest. Look at the root and up to three level
 
 | Manifest | Language / ecosystem | Package manager hint |
 |---|---|---|
-| `package.json` | JavaScript / TypeScript (`tsconfig.json` → TS) | `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock(b)` bun |
+| `package.json` | JavaScript / TypeScript (TS when any of: `tsconfig*.json`, a `typescript` dependency, `.ts`/`.tsx`/`.mts` source files, `<script lang="ts">` in `.vue`/`.svelte` files; JS otherwise) | `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock(b)` bun |
 | `pyproject.toml`, `requirements*.txt`, `setup.py` | Python | `uv.lock` uv, `poetry.lock` poetry, `Pipfile.lock` pipenv |
 | `composer.json` | PHP | composer |
 | `go.mod` | Go | go modules |

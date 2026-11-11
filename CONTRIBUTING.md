@@ -18,7 +18,7 @@ npm run build-evals  # regenerate plugins/project-setup-kit/evals/ after editing
 | Path | What |
 |---|---|
 | `plugins/project-setup-kit/skills/setup-kit/SKILL.md` | Entry point the agent reads |
-| `…/references/` | Flow, catalog of the 46 items, detection, languages, questionnaire, profiles, troubleshooting, guides |
+| `…/references/` | Flow, catalog of the 51 items, detection, languages, questionnaire, profiles, troubleshooting, guides |
 | `…/templates/` | Files copied into projects: guards, check scripts, CI workflows, lint configs, roles, commands |
 | `…/scripts/kit.mjs` | The kit's own state tool (`.ai-kit.json`, config sections, pending files, guard tests) |
 | `bin/cli.mjs` | `npx` entry for Copilot/Cursor users and guard-only installs |

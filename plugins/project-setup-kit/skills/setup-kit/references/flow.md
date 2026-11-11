@@ -26,7 +26,7 @@ Whichever option: if the folder is not a git repository, offer `git init` first 
 2. **Planned stack**: record it with `kit.mjs context '{"newProject":true,"plannedStack":{...}}'`. Choose the hook manager now (item 13's recommendation, default lefthook) so later items have one place to add commands; its lint commands come after the skeleton.
    - Install now (they do not need code): 1 (rules from the questionnaire; commands and layout as `TODO:` lines), 2 (record which rules will become checks; install them later), 3, 5, 6, 7, 8, 9, 10, 11 (only git read commands; project commands after the skeleton), 12 (teams only), 18, 27, 31, 38, 39, 40.
    - Not applicable for a new project: 16 (no old code to ratchet).
-   - Postpone with `kit.mjs state <id> pending --note "no code yet"`: 4, 13 (manager chosen, commands later), 14, 15, 17, 19–26, 28, 29 (Dependabot needs a manifest to watch), 30, 32–37, 41–46.
+   - Postpone with `kit.mjs state <id> pending --note "no code yet"`: 4, 13 (manager chosen, commands later), 14, 15, 17, 19–26, 28, 29 (Dependabot needs a manifest to watch), 30, 32–37, 41–47, 49, 50 (no commands yet), 51 (no infrastructure files yet). Item 48 can be done now for the workflows written in this run.
    Tell the user to run `/setup-kit update` after creating the skeleton; update asks the postponed items then.
 3. **Stop**: write nothing.
 

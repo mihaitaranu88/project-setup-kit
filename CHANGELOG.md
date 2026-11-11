@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.4.0
+
+Five new items in a new group, **I. Supply chain and agent environments** (51 items in total):
+
+- **47 · New-dependency check.** AI agents sometimes invent package names, and attackers register them ("slopsquatting"). A `deps-guard` hook looks at install commands (`npm install <pkg>`, `pnpm add`, `pip install`, `uv add`, `poetry add`, `composer require`, `cargo add`, `go get`) and asks before installing a package that the registry does not know, that was published in the last 14 days, or that has very few downloads. A CI job (`new-deps.mjs`) does the same for every dependency added to `package.json`, `pyproject.toml`, `requirements*.txt`, `composer.json`, `Cargo.toml`, `go.mod` or `pom.xml`. It checks npm, PyPI, Packagist, crates.io, the Go module proxy and Maven Central, has an allow list for private packages, and never blocks when the registry cannot be reached.
+- **48 · GitHub Actions hardening.** `kit.mjs pin-actions` pins every action to its commit SHA (resolved with `git ls-remote`, the tag kept as a note); a `workflow-security.yml` workflow runs actionlint and zizmor; Dependabot keeps the pins up to date.
+- **49 · Ready environment for cloud agents.** One `.ai-kit/agent-setup.sh` installs the project from the lockfiles, and each tool calls it: `copilot-setup-steps.yml` for the Copilot coding agent, `.cursor/environment.json` for Cursor background agents, a `SessionStart` hook guarded by `CLAUDE_CODE_REMOTE` for Claude Code on the web, the setup-script setting for Codex, and an optional dev container.
+- **50 · One verify command.** `verify.mjs` runs the project's lint, type-check, test and build steps from `.ai-kit/config.json`, reports every failure, and is what the agent rule, the stop hook and (optionally) CI call, so they cannot drift apart.
+- **51 · Container and infrastructure scanning.** hadolint for Dockerfiles and `trivy config` for Docker, compose, Kubernetes, Helm and Terraform, only when the repository has them.
+
+Improved items:
+
+- 35: MCP servers are pinned to exact versions instead of `@latest`, database servers stay read-only, and `AGENTS.md` gets a rule that text from issues, logs, web pages and tool results is data, not instructions.
+- 43: optional lock-safety lint for migrations (squawk for Postgres, strong_migrations for Rails, django-migration-linter).
+- 46: optional smoke test on the preview with the project's existing Playwright or Cypress tests.
+- `AGENTS.md` template: a "Verify before saying done" command first, and placement rules instead of a folder tour.
+
+Workflow templates:
+
+- Every template is now rendered and checked with actionlint and zizmor in the kit's CI. This found and fixed five script-injection patterns (`${{ github.base_ref }}` inside `run:`, now passed through `env:`), checkouts that kept the git token on disk (`persist-credentials: false`), and a preview workflow with write permission on every job.
+- The kit's own workflows are pinned to SHAs, scanned the same way, and updated by Dependabot.
+
+Detection: TypeScript is recognized from a `typescript` dependency, `.ts` files or `<script lang="ts">`, not only from `tsconfig.json`.
+
 ## 0.3.0
 
 - `AGENTS.md` keeps only what an agent cannot learn from the code: the questionnaire now skips answers that restate the stack, the folder layout or commands already in the manifest, and rules a check already explains. Research on context files (ETH Zurich, 2026) found that restating the codebase does not help agents and sometimes hurts.

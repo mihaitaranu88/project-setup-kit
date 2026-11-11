@@ -14,9 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "{{NODE_VERSION}}"
       - name: New migrations are reversible and ordered
-        run: node .ai-kit/scripts/migration-check.mjs --base "origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node .ai-kit/scripts/migration-check.mjs --base "origin/$BASE_REF"

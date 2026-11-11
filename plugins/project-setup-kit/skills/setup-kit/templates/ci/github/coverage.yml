@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Tests with coverage (lcov or cobertura XML)
         run: "{{TEST_WITH_COVERAGE_COMMAND}}"
@@ -20,4 +21,6 @@ jobs:
           python-version: "3.12"
       - run: pip install diff-cover
       - name: Coverage of changed lines
-        run: diff-cover "{{COVERAGE_REPORT_PATH}}" --compare-branch="origin/${{ github.base_ref }}" --fail-under={{COVERAGE_THRESHOLD}}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: diff-cover "{{COVERAGE_REPORT_PATH}}" --compare-branch="origin/$BASE_REF" --fail-under={{COVERAGE_THRESHOLD}}

@@ -1,11 +1,32 @@
 {
-  "parts": [{ "path": ".", "language": "java", "framework": "spring-boot", "packageManager": "maven" }],
-  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "parts": [
+    {
+      "path": ".",
+      "language": "java",
+      "framework": "spring-boot",
+      "packageManager": "maven"
+    }
+  ],
+  "has": {
+    "frontend": false,
+    "api": true,
+    "db": true,
+    "severalServices": false,
+    "versionedReleases": false
+  },
   "alreadyConfigured": [],
   "partial": [],
-  "notApplicable": [17, 19, 26, 46],
+  "notApplicable": [
+    17,
+    19,
+    26,
+    46,
+    51
+  ],
   "migrationsConfig": {
-    "dirs": ["src/main/resources/db/migration"],
+    "dirs": [
+      "src/main/resources/db/migration"
+    ],
     "timestampPattern": "^V(\\d+(?:[._]\\d+)*)__",
     "downRequired": false,
     "ignorePattern": "^(R|U)[0-9]*__"

@@ -1,8 +1,30 @@
 {
-  "parts": [{ "path": ".", "language": "go", "framework": "net/http", "packageManager": "go modules" }],
-  "has": { "frontend": false, "api": true, "db": false, "severalServices": false, "versionedReleases": false },
+  "parts": [
+    {
+      "path": ".",
+      "language": "go",
+      "framework": "net/http",
+      "packageManager": "go modules"
+    }
+  ],
+  "has": {
+    "frontend": false,
+    "api": true,
+    "db": false,
+    "severalServices": false,
+    "versionedReleases": false
+  },
   "alreadyConfigured": [],
   "partial": [],
-  "notApplicable": [14, 17, 19, 26, 42, 43, 46],
+  "notApplicable": [
+    14,
+    17,
+    19,
+    26,
+    42,
+    43,
+    46,
+    51
+  ],
   "notes": "Item 14 does not apply: Go is already strictly typed. Item 19 does not apply: Go has no installed-dependencies folder to compare."
 }

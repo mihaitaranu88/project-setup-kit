@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
         if: "{{USES_PNPM}}"
@@ -25,6 +26,10 @@ jobs:
           cache: "{{PACKAGE_MANAGER}}"
       - run: "{{INSTALL_COMMAND}}"
       - name: Strict rules on changed lines
-        run: node .ai-kit/scripts/lint-ratchet.mjs --base "origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node .ai-kit/scripts/lint-ratchet.mjs --base "origin/$BASE_REF"
       - name: Warning budget may only go down
-        run: node .ai-kit/scripts/warning-budget.mjs --against-base --base "origin/${{ github.base_ref }}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node .ai-kit/scripts/warning-budget.mjs --against-base --base "origin/$BASE_REF"

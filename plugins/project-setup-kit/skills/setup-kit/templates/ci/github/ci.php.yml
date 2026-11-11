@@ -6,6 +6,8 @@ php:
       working-directory: "{{PART_PATH}}"
   steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - uses: shivammathur/setup-php@v2
       with:
         php-version: "{{PHP_VERSION}}"

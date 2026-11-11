@@ -7,6 +7,7 @@ node:
   steps:
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         fetch-depth: 0
     - uses: pnpm/action-setup@v4
       if: "{{USES_PNPM}}"
@@ -24,7 +25,9 @@ node:
         "{{BUILD_ENV_PLACEHOLDERS}}": "{{FAKE_VALUE}}"
     - name: Precheck on the PR diff
       if: github.event_name == 'pull_request'
-      run: node .ai-kit/scripts/precheck.mjs --base "origin/${{ github.base_ref }}"
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node .ai-kit/scripts/precheck.mjs --base "origin/$BASE_REF"
     - name: Dead code (warning)
       if: "{{ITEM_24}}"
       continue-on-error: true

@@ -25,6 +25,7 @@ jobs:
         run: sleep "${{ vars.AI_REVIEW_DEBOUNCE_SECONDS || 120 }}"
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Detect sensitive paths
         id: sensitive

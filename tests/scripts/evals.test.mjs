@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 const { buildCases, findDrift, graderMatches } = await import('../build-evals.mjs');
 
-const GO_ANSWER = 'Analysis done.\n```json\n{"mode": "existing",\n "parts": [{"path": ".", "language": "go"}],\n "has": {"frontend": false, "api": true, "db": false, "severalServices": false, "versionedReleases": false},\n "alreadyConfigured": [],\n "notApplicable": [14, 17, 19, 26, 42, 43, "46"]}\n```';
+const GO_ANSWER = 'Analysis done.\n```json\n{"mode": "existing",\n "parts": [{"path": ".", "language": "go"}],\n "has": {"frontend": false, "api": true, "db": false, "severalServices": false, "versionedReleases": false},\n "alreadyConfigured": [],\n "notApplicable": [14, 17, 19, 26, 42, 43, "46", 51]}\n```';
 
 function regexGraders(name) {
   const evalCase = buildCases().find(candidate => candidate.name === name);

@@ -1,6 +1,6 @@
 # Profiles
 
-A profile answers most items in advance so the user does not go through 46 questions. It never skips consent: the agent shows the whole plan once, the user changes what they want, and every item still ends with the usual file review.
+A profile answers most items in advance so the user does not go through 51 questions. It never skips consent: the agent shows the whole plan once, the user changes what they want, and every item still ends with the usual file review.
 
 | Profile | For | Questionnaire |
 |---|---|---|
@@ -59,6 +59,11 @@ Legend: `yes` = install with the recommended defaults · `no` = skip (recorded a
 | 44 | Endpoint protection report | no | yes | yes |
 | 45 | OpenAPI + contract check | no | ask | ask |
 | 46 | Frontend previews | no | ask | ask |
+| 47 | New-dependency check | yes | yes | yes, deny mode and `failOnWarn` |
+| 48 | GitHub Actions hardening | no | yes | yes |
+| 49 | Cloud agent environment | ask | ask | ask |
+| 50 | One verify command | yes | yes | yes |
+| 51 | Container and infrastructure scanning | no | yes | yes |
 
 `strict` also sets: the prefix budget check to `--strict` in CI, the warning budget as a required check, and `dangerGuard.mode` stays `ask` (never weaker).
 

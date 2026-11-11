@@ -216,5 +216,34 @@
   "worktree": {
     "install": "{{INSTALL_COMMAND}}",
     "baseBranch": null
+  },
+  "verify": {
+    "bail": false,
+    "steps": [
+      {
+        "name": "lint",
+        "run": "npm run lint"
+      },
+      {
+        "name": "types",
+        "run": "npm run typecheck"
+      },
+      {
+        "name": "test",
+        "run": "npm test"
+      },
+      {
+        "name": "build",
+        "run": "npm run build"
+      }
+    ]
+  },
+  "dependencyCheck": {
+    "mode": "ask",
+    "minAgeDays": 14,
+    "minWeeklyDownloads": 50,
+    "failOnWarn": false,
+    "allow": [],
+    "timeoutMs": 5000
   }
 }

@@ -4,11 +4,13 @@ All guards live in `.ai-kit/hooks/` and share `hook-io.mjs`, which reads each to
 
 | Tool | Where | Template | Items |
 |---|---|---|---|
-| Claude Code | `.claude/settings.json` (merge; keep the user's keys) | `claude/settings.json` | 9 = PreToolUse git-guard, danger-guard, protect-guard · 10 = PreToolUse env-guard · 11 = `permissions.allow` · 36 = PostToolUse post-edit-check + Stop stop-check |
-| GitHub Copilot (CLI / coding agent) | `.github/hooks/*.json` | `copilot/*.json` | 9, 10 |
-| Cursor | `.cursor/hooks.json` | `cursor/hooks.json` | 9, 10 (experimental: check the current Cursor hooks docs before installing) |
+| Claude Code | `.claude/settings.json` (merge; keep the user's keys) | `claude/settings.json` | 9 = PreToolUse git-guard, danger-guard, protect-guard · 10 = PreToolUse env-guard · 11 = `permissions.allow` · 36 = PostToolUse post-edit-check + Stop stop-check · 47 = PreToolUse deps-guard (Bash) |
+| GitHub Copilot (CLI / coding agent) | `.github/hooks/*.json` | `copilot/*.json` | 9, 10, 47 |
+| Cursor | `.cursor/hooks.json` | `cursor/hooks.json` | 9, 10, 47 (experimental: check the current Cursor hooks docs before installing) |
 
-Decisions: git-guard and env-guard always deny. danger-guard and protect-guard answer `ask` by default (Claude Code and Cursor show an approval prompt to the developer); Copilot has no ask, so they deny there. Set `mode: "deny"` in `.ai-kit/config.json` for unattended runs.
+Decisions: git-guard and env-guard always deny. deps-guard asks only for a package the registry does not know, one published in the last days or one with very few downloads; when the registry cannot be reached it lets the command through (the CI check catches it later). danger-guard and protect-guard answer `ask` by default (Claude Code and Cursor show an approval prompt to the developer); Copilot has no ask, so they deny there. Set `mode: "deny"` in `.ai-kit/config.json` for unattended runs.
+
+Keep only the entries for guards that are installed: a hook pointing at a missing script fails on every tool call. deps-guard (item 47) is listed in the templates but is installed only with item 47.
 
 Install the hooks into the project's `.claude/settings.json`, not through a plugin's `hooks/hooks.json`: plugin-installed Stop hooks have had bugs with exit code 2, and the same hook in both places runs twice.
 

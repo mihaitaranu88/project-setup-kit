@@ -104,7 +104,7 @@ export async function runGuard(check) {
   const raw = await readStdin();
   let decision;
   try {
-    decision = check(normalizeToolCall(raw));
+    decision = await check(normalizeToolCall(raw));
   } catch {
     decision = { host: guessHostFromRaw(raw), reason: 'Guard could not parse this tool call, so it is blocked.' };
   }

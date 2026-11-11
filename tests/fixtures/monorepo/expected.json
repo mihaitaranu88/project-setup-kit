@@ -1,12 +1,30 @@
 {
   "parts": [
-    { "path": "web", "language": "typescript", "framework": "vue", "packageManager": "npm" },
-    { "path": "api", "language": "php", "framework": "laravel", "packageManager": "composer" }
+    {
+      "path": "web",
+      "language": "typescript",
+      "framework": "vue",
+      "packageManager": "npm"
+    },
+    {
+      "path": "api",
+      "language": "php",
+      "framework": "laravel",
+      "packageManager": "composer"
+    }
   ],
-  "has": { "frontend": true, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "has": {
+    "frontend": true,
+    "api": true,
+    "db": true,
+    "severalServices": false,
+    "versionedReleases": false
+  },
   "alreadyConfigured": [],
   "partial": [],
-  "notApplicable": [],
+  "notApplicable": [
+    51
+  ],
   "expectations": [
     "Item 13, 15, 21 are configured per part (ESLint + Prettier for web, Pint/PHPStan for api), with one CI job per part.",
     "Item 17 uses eslint-plugin-vuejs-accessibility, not jsx-a11y.",

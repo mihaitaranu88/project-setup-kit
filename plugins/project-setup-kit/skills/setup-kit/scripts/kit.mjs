@@ -33,7 +33,8 @@ const USAGE = `Usage (run from the project root):
   node kit.mjs guard-test                                        send sample tool calls to every installed guard and compare the answers
   node kit.mjs plugin-rules <plugin> [--via <package>] [--config recommended]   print a lint plugin's preset rules (resolving it through a framework package)
   node kit.mjs verify                                           list recorded files that changed or disappeared
-  node kit.mjs templates [prefix]                               list template paths`;
+  node kit.mjs templates [prefix]                               list template paths
+  node kit.mjs pin-actions <workflow>... [--check]               pin every GitHub action to a full commit SHA (the tag stays as a note); --check only lists unpinned ones`;
 
 export function hashContent(content) {
   return `sha256:${createHash('sha256').update(content).digest('hex')}`;
@@ -256,6 +257,57 @@ export const GUARD_SAMPLES = [
   { guard: 'env-guard.mjs', tool: 'Bash', input: { command: 'cat .env.local' }, expect: 'deny' },
 ];
 
+const USES_LINE = /^(\s*-?\s*uses:\s*)(["']?)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)((?:\/[^@\s"']+)?)@([^\s"'#]+)\2(\s*#.*)?$/;
+
+export function findUnpinnedActions(text) {
+  return text.split('\n').flatMap((line, index) => {
+    const match = line.match(USES_LINE);
+    if (!match || /^[0-9a-f]{40}$/.test(match[5])) return [];
+    return [{ line: index + 1, repo: match[3], path: match[4], ref: match[5] }];
+  });
+}
+
+export function lsRemote(repo, ref) {
+  const output = execFileSync('git', ['ls-remote', `https://github.com/${repo}`, `refs/tags/${ref}`, `refs/tags/${ref}^{}`, `refs/heads/${ref}`], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: 30000,
+  });
+  return output.split('\n').filter(Boolean).map(line => {
+    const [sha, name] = line.split('\t');
+    return { sha, name };
+  });
+}
+
+export function resolveActionSha(repo, ref, listRefs = lsRemote) {
+  const refs = listRefs(repo, ref);
+  const pick = name => refs.find(entry => entry.name === name)?.sha;
+  return pick(`refs/tags/${ref}^{}`) ?? pick(`refs/tags/${ref}`) ?? pick(`refs/heads/${ref}`) ?? null;
+}
+
+export function pinWorkflowText(text, resolve = resolveActionSha) {
+  const pinned = [];
+  const failed = [];
+  const lines = text.split('\n').map(line => {
+    const match = line.match(USES_LINE);
+    if (!match || /^[0-9a-f]{40}$/.test(match[5])) return line;
+    const [, prefix, quote, repo, path, ref] = match;
+    let sha = null;
+    try {
+      sha = resolve(repo, ref);
+    } catch {
+      sha = null;
+    }
+    if (!sha) {
+      failed.push(`${repo}${path}@${ref}`);
+      return line;
+    }
+    pinned.push(`${repo}${path}@${ref}`);
+    return `${prefix}${quote}${repo}${path}@${sha}${quote} # ${ref}`;
+  });
+  return { text: lines.join('\n'), pinned, failed };
+}
+
 export function readDecision(stdout) {
   const text = stdout.trim();
   if (!text) return 'allow';
@@ -317,6 +369,21 @@ function runCommand(argv, cwd, root) {
     const [plugin] = positional(args);
     if (!plugin) throw new Error(USAGE);
     return JSON.stringify(readPluginRules(root, plugin, readOption(args, 'via'), readOption(args, 'config') ?? 'recommended'), null, 2);
+  }
+  if (command === 'pin-actions') {
+    const files = positional(args).map(path => resolve(cwd, path));
+    if (files.length === 0) throw new Error(USAGE);
+    if (args.includes('--check')) {
+      const unpinned = files.flatMap(file => findUnpinnedActions(readFileSync(file, 'utf8')).map(entry => `${relative(root, file)}:${entry.line} ${entry.repo}${entry.path}@${entry.ref}`));
+      if (unpinned.length > 0) throw Object.assign(new Error(`Not pinned to a commit SHA:\n${unpinned.join('\n')}`), { code: 'UNPINNED' });
+      return 'Every action is pinned to a commit SHA.';
+    }
+    const report = files.map(file => {
+      const result = pinWorkflowText(readFileSync(file, 'utf8'));
+      if (result.pinned.length > 0) writeFileAtomically(file, result.text);
+      return `${relative(root, file)}: pinned ${result.pinned.length}${result.failed.length ? `, could not resolve ${result.failed.join(', ')}` : ''}`;
+    });
+    return `${report.join('\n')}\nRecord the changed files again: node kit.mjs record <files> --item <their item>.`;
   }
   if (command === 'verify') {
     const problems = verifyFiles(loadState(root), root);
@@ -416,6 +483,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
     process.stdout.write(`${run(process.argv.slice(2))}\n`);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
-    process.exitCode = { EXISTS: 3, PROTECTED: 4 }[error.code] ?? 1;
+    process.exitCode = { EXISTS: 3, PROTECTED: 4, UNPINNED: 5 }[error.code] ?? 1;
   }
 }

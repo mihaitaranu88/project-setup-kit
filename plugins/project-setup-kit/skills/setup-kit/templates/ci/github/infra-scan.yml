@@ -1,0 +1,40 @@
+name: Containers and infrastructure
+
+on:
+  pull_request:
+    paths: ["{{INFRA_PATHS}}"]
+  push:
+    branches: ["{{BASE_BRANCH}}"]
+    paths: ["{{INFRA_PATHS}}"]
+
+permissions:
+  contents: read
+
+jobs:
+  dockerfiles:
+    if: "{{HAS_DOCKERFILE}}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: hadolint (Dockerfile mistakes and unsafe defaults)
+        env:
+          DOCKERFILES: "{{DOCKERFILES}}"
+        run: |
+          for file in $DOCKERFILES; do
+            echo "::group::$file"
+            docker run --rm -i -v "$PWD:/repo" -w /repo hadolint/hadolint:v2.15.1 hadolint --failure-threshold warning "$file"
+            echo "::endgroup::"
+          done
+
+  misconfigurations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: trivy config (Dockerfile, compose, Kubernetes, Terraform, Helm)
+        run: docker run --rm -v "$PWD:/repo" -w /repo aquasec/trivy:0.76.2 config --exit-code 1 --severity HIGH,CRITICAL .

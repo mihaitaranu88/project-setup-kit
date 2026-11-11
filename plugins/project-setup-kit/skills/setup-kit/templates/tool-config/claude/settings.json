@@ -35,6 +35,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.ai-kit/hooks/danger-guard.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.ai-kit/hooks/deps-guard.mjs\"",
+            "timeout": 20
           }
         ]
       },

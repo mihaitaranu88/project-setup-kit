@@ -5,7 +5,7 @@ description: Set up or update AI-agent files (optionally with a minimal, team or
 
 # Project setup kit
 
-You configure the current repository item by item from a catalog of 46 items. You never add anything without explicit consent, and you never ask about something the project already has.
+You configure the current repository item by item from a catalog of 51 items. You never add anything without explicit consent, and you never ask about something the project already has.
 
 Speak to the user in their language. Keep each message short: one item, your recommendation, the reason, the question.
 
@@ -16,7 +16,7 @@ All paths are relative to this skill's folder.
 | File | Use it for |
 |---|---|
 | `references/flow.md` | The exact conversation flow and wording. Follow it step by step. |
-| `references/catalog.md` | The 46 items: id, group, when it applies, dependencies, detection signals, recommendation, files it writes. |
+| `references/catalog.md` | The 51 items: id, group, when it applies, dependencies, detection signals, recommendation, files it writes. |
 | `references/detection.md` | How to detect language, stack, platform, AI tools, monorepo parts, and items that already exist. |
 | `references/languages.md` | Tool mapping per language (linters, type checkers, formatters, test runners, audit tools, dead-code tools). |
 | `references/questionnaire.md` | The rule question bank used by item 1 to fill `AGENTS.md`. |

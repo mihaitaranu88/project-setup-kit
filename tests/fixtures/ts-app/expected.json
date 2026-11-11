@@ -1,8 +1,33 @@
 {
-  "parts": [{ "path": ".", "language": "typescript", "framework": "react", "packageManager": "npm" }],
-  "has": { "frontend": true, "api": false, "db": false, "severalServices": false, "versionedReleases": false },
+  "parts": [
+    {
+      "path": ".",
+      "language": "typescript",
+      "framework": "react",
+      "packageManager": "npm"
+    }
+  ],
+  "has": {
+    "frontend": true,
+    "api": false,
+    "db": false,
+    "severalServices": false,
+    "versionedReleases": false
+  },
   "alreadyConfigured": [],
-  "partial": [{ "id": 14, "missing": "strict: true in tsconfig.json" }],
-  "notApplicable": [20, 42, 43, 44, 45],
+  "partial": [
+    {
+      "id": 14,
+      "missing": "strict: true in tsconfig.json"
+    }
+  ],
+  "notApplicable": [
+    20,
+    42,
+    43,
+    44,
+    45,
+    51
+  ],
   "notes": "No lockfile is committed here on purpose: item 19 should say there is nothing to compare yet and recommend committing package-lock.json."
 }

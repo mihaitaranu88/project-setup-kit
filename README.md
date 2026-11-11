@@ -111,7 +111,7 @@ You still see the full list before anything is installed, and you still review t
 
 ## What you can get
 
-46 items in 8 groups. The agent asks only about the ones that fit your project.
+51 items in 9 groups. The agent asks only about the ones that fit your project.
 
 | Group | Highlights |
 |---|---|
@@ -122,10 +122,11 @@ You still see the full list before anything is installed, and you still review t
 | **Security** | Secret scanning (gitleaks), vulnerable dependencies, Dependabot, license checks |
 | **Agent tooling** | Task app connection, slash commands (`/bugfix`, `/feature`, `/ship`, `/address-review-findings`), agent roles, skills, a shared `.mcp.json`, lint and tests after every edit and before the agent stops |
 | **Conventions** | Branch names, commit and PR title format, PR template with required sections, automatic releases |
-| **Only if you have it** | A guard against migrating a shared database by mistake, migration checks, a report of which endpoints are protected, OpenAPI contract checks, frontend previews |
+| **Only if you have it** | A guard against migrating a shared database by mistake, migration checks (with lock-safety lint for Postgres and Rails), a report of which endpoints are protected, OpenAPI contract checks, frontend previews with a smoke test |
+| **Supply chain and agent environments** | A check that every new dependency exists and is not brand new (agents invent package names and attackers register them), GitHub Actions pinned to commit SHAs and scanned with zizmor and actionlint, install scripts for cloud agents (Copilot, Cursor, Claude Code on the web, Codex), one `verify` command for agents, hooks and CI, Docker and Terraform scanning |
 
 <details>
-<summary>All 46 items</summary>
+<summary>All 51 items</summary>
 
 | # | Item | # | Item |
 |---|---|---|---|
@@ -152,6 +153,11 @@ You still see the full list before anything is installed, and you still review t
 | 21 | Base CI as required check | 44 | Endpoint protection report |
 | 22 | AI review on PRs | 45 | OpenAPI + contract check |
 | 23 | SonarCloud / coverage + duplication | 46 | Frontend previews |
+| | | 47 | New-dependency check |
+| | | 48 | GitHub Actions hardening |
+| | | 49 | Cloud agent environment |
+| | | 50 | One verify command |
+| | | 51 | Container and infrastructure scanning |
 
 Conditions, dependencies and detection rules: [`references/catalog.md`](plugins/project-setup-kit/skills/setup-kit/references/catalog.md).
 

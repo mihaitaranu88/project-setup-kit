@@ -10,7 +10,6 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   scope:
@@ -21,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - id: check
         env:
@@ -38,8 +38,13 @@ jobs:
     needs: scope
     if: needs.scope.outputs.frontend-only == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         if: "{{USES_PNPM}}"
       - uses: actions/setup-node@v4
