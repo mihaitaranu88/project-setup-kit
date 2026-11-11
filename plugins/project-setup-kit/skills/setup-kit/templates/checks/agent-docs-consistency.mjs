@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { basename, dirname, extname, join, normalize, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -25,6 +26,14 @@ function listEntries(root, dir) {
       };
     })
     .filter(entry => entry.markdownFiles.length > 0 && entry.markdownFiles.every(file => file.endsWith('.md')));
+}
+
+export function filterIgnored(root, paths) {
+  if (paths.length === 0) return paths;
+  const result = spawnSync('git', ['check-ignore', '--stdin'], { cwd: root, input: paths.join('\n'), encoding: 'utf8' });
+  if (result.error || (result.status !== 0 && result.status !== 1)) return paths;
+  const ignored = new Set(result.stdout.split(/\r?\n/).filter(Boolean).map(path => toPosix(path).replace(/\/$/, '')));
+  return paths.filter(path => !ignored.has(path));
 }
 
 export function toPendingPath(path) {
@@ -70,7 +79,9 @@ export function evaluateAgentDocs(root, settings) {
     .filter(file => existsSync(join(root, file)))
     .map(file => readFileSync(join(root, file), 'utf8'))
     .join('\n');
-  const entries = (settings.dirs ?? []).flatMap(dir => listEntries(root, dir));
+  const listed = (settings.dirs ?? []).flatMap(dir => listEntries(root, dir));
+  const tracked = new Set(filterIgnored(root, listed.map(entry => entry.path)));
+  const entries = listed.filter(entry => tracked.has(entry.path));
   for (const entry of entries) {
     if (!isMentioned(rosterText, entry)) {
       problems.push(`${entry.path} exists but is not mentioned in ${settings.roster.join(', ')}`);

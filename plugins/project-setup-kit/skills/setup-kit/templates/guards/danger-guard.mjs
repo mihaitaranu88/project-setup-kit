@@ -13,6 +13,7 @@ export const PACKS = {
       { name: 'delete a broad path recursively', regex: new RegExp(`\\brm\\s+(?:-[a-zA-Z]+\\s+)*--recursive\\s+(?:-[a-zA-Z]+\\s+|--[a-z-]+\\s+)*${BROAD_RM_TARGET}`) },
       { name: 'delete a broad path recursively', regex: /\b(?:Remove-Item|rm|ri|del|erase)\b[^;&|]*-Recurse\b[^;&|]*?(?:\s|^)(?:[A-Za-z]:\\?|\\|~|\$HOME|\$env:USERPROFILE|\.|\.\.|\*)(?:\\\*)?(?=\s|$|[;&|)"'])/i },
       { name: 'delete a broad path recursively', regex: /\b(?:rd|rmdir)\s+(?:\/[sq]\s+)*\/s\b[^;&|]*?\s(?:[A-Za-z]:\\?|\\|%USERPROFILE%|\.|\.\.)(?=\s|$|[;&|)"'])/i },
+      { name: 'delete files recursively as root', regex: /\bsudo\s+(?:-\S+\s+)*rm\s+(?:[^;&|]*\s)?(?:-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b/ },
       { name: 'format or overwrite a disk', regex: /\b(?:mkfs(?:\.\w+)?|dd\s+[^;&|]*\bof=\/dev\/)/ },
       { name: 'make files world-writable', regex: /\bchmod\s+(?:-[a-zA-Z]*R[a-zA-Z]*\s+)+0?777\b/ },
     ],
@@ -82,8 +83,18 @@ export function removeQuotedText(command) {
   return command.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, ' __quoted__ ');
 }
 
+const SEARCH_ONLY_SEGMENT = /^\s*(?:sudo\s+)?(?:grep|egrep|fgrep|rg|ag|ack|findstr|Select-String|git\s+(?:grep|log)|less|more|head|tail|wc)\b/i;
+
+function removeQuotedTextFromSearches(command) {
+  return command
+    .split(/(\|\|?|&&|;)/)
+    .map(segment => (SEARCH_ONLY_SEGMENT.test(segment) ? removeQuotedText(segment) : segment))
+    .join('');
+}
+
 export function buildScanText(command, scan) {
-  if (scan === 'full' || INTERPRETER_SCRIPT.test(command)) return command;
+  if (INTERPRETER_SCRIPT.test(command)) return command;
+  if (scan === 'full') return removeQuotedTextFromSearches(command);
   return removeQuotedText(command);
 }
 

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -225,6 +226,18 @@ describe('agent docs consistency', () => {
   it('should report a role file when AGENTS.md does not mention it', () => {
     const root = makeRepo({ 'AGENTS.md': '# Rules\n', '.claude/agents/reviewer.md': '# reviewer' });
     assert.deepEqual(evaluateAgentDocs(root, settings), ['.claude/agents/reviewer.md exists but is not mentioned in AGENTS.md']);
+  });
+
+  it('should not require a roster entry for a skill git ignores, such as the kit copy in .agents/skills', () => {
+    const root = makeRepo({
+      'AGENTS.md': '# Rules\n',
+      '.gitignore': '/.agents/skills/setup-kit/\n',
+      '.agents/skills/setup-kit/SKILL.md': '# kit',
+      '.agents/skills/payments/SKILL.md': '# payments',
+    });
+    execFileSync('git', ['init', '-q'], { cwd: root });
+    const result = evaluateAgentDocs(root, { roster: ['AGENTS.md'], dirs: ['.agents/skills'], linkCheckFiles: ['AGENTS.md'] });
+    assert.deepEqual(result, ['.agents/skills/payments exists but is not mentioned in AGENTS.md']);
   });
 
   it('should report a link when its target does not exist', () => {

@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 const SKILL = '../../plugins/project-setup-kit/skills/setup-kit';
 const cli = await import('../../bin/cli.mjs');
-const { compareAnalysis, extractJson } = await import('../eval-skill.mjs');
 const { quoteForShell } = await import(`${SKILL}/templates/guards/hook-io.mjs`);
 const { findDangerousCommand, resolveDangerPolicy } = await import(`${SKILL}/templates/guards/danger-guard.mjs`);
 const { worktreePath } = await import(`${SKILL}/templates/checks/worktree.mjs`);
@@ -23,10 +22,10 @@ describe('npx CLI', () => {
   it('should copy the skill and write a Copilot prompt when the tool is copilot', () => {
     const root = emptyRepo();
     const { written } = cli.installSkill(root, { tool: 'copilot' });
-    assert.ok(existsSync(join(root, '.ai-kit/setup-kit/SKILL.md')));
-    assert.equal(readFileSync(join(root, '.ai-kit/setup-kit/VERSION'), 'utf8').trim(), cli.VERSION);
-    assert.match(readFileSync(join(root, '.github/prompts/setup-kit.prompt.md'), 'utf8'), /mode: agent[\s\S]*\.ai-kit\/setup-kit\/SKILL\.md/);
-    assert.deepEqual(written, ['.ai-kit/setup-kit', '.github/prompts/setup-kit.prompt.md', '.gitignore']);
+    assert.ok(existsSync(join(root, '.agents/skills/setup-kit/SKILL.md')));
+    assert.equal(readFileSync(join(root, '.agents/skills/setup-kit/VERSION'), 'utf8').trim(), cli.VERSION);
+    assert.match(readFileSync(join(root, '.github/prompts/setup-kit.prompt.md'), 'utf8'), /mode: agent[\s\S]*\.agents\/skills\/setup-kit\/SKILL\.md/);
+    assert.deepEqual(written, ['.agents/skills/setup-kit', '.github/prompts/setup-kit.prompt.md', '.gitignore']);
   });
 
   it('should write a Cursor command and add the skill folder to .gitignore once', () => {
@@ -34,7 +33,7 @@ describe('npx CLI', () => {
     cli.installSkill(root, { tool: 'cursor' });
     cli.installSkill(root, { tool: 'cursor' });
     assert.ok(existsSync(join(root, '.cursor/commands/setup-kit.md')));
-    assert.equal(readFileSync(join(root, '.gitignore'), 'utf8').match(/\/\.ai-kit\/setup-kit\//g).length, 1);
+    assert.equal(readFileSync(join(root, '.gitignore'), 'utf8').match(/\/\.agents\/skills\/setup-kit\//g).length, 1);
   });
 
   it('should send Claude Code users to the plugin', () => {
@@ -44,7 +43,44 @@ describe('npx CLI', () => {
   it('should let the copied kit.mjs read its version from the VERSION file', () => {
     const root = emptyRepo();
     cli.installSkill(root, { tool: 'other' });
-    assert.equal(readKitVersion(join(root, '.ai-kit/setup-kit')), cli.VERSION);
+    assert.equal(readKitVersion(join(root, '.agents/skills/setup-kit')), cli.VERSION);
+  });
+
+  it('should write a Gemini CLI command when the tool is gemini', () => {
+    const root = emptyRepo();
+    cli.installSkill(root, { tool: 'gemini' });
+    const command = readFileSync(join(root, '.gemini/commands/setup-kit.toml'), 'utf8');
+    assert.match(command, /^description = "/);
+    assert.match(command, /prompt = """\n[\s\S]*\.agents\/skills\/setup-kit\/SKILL\.md[\s\S]*\n"""\n$/);
+  });
+
+  it('should rely on skill discovery without a command file when the tool is codex', () => {
+    const root = emptyRepo();
+    const { written } = cli.installSkill(root, { tool: 'codex' });
+    assert.deepEqual(written, ['.agents/skills/setup-kit', '.gitignore']);
+    assert.match(cli.runCli(['install-skill', '--tool', 'codex'], root), /\$setup-kit/);
+  });
+
+  it('should move a copy installed by 0.2.0 and repoint its prompt when installing again', () => {
+    const root = emptyRepo();
+    mkdirSync(join(root, '.ai-kit/setup-kit'), { recursive: true });
+    writeFileSync(join(root, '.ai-kit/setup-kit/SKILL.md'), 'old');
+    mkdirSync(join(root, '.cursor/commands'), { recursive: true });
+    writeFileSync(join(root, '.cursor/commands/setup-kit.md'), 'Read `.ai-kit/setup-kit/SKILL.md`');
+    writeFileSync(join(root, '.gitignore'), 'node_modules/\n/.ai-kit/setup-kit/\n');
+    const output = cli.runCli(['install-skill', '--tool', 'cursor'], root);
+    assert.match(output, /Moved the earlier copy/);
+    assert.ok(!existsSync(join(root, '.ai-kit/setup-kit')));
+    assert.match(readFileSync(join(root, '.cursor/commands/setup-kit.md'), 'utf8'), /\.agents\/skills\/setup-kit/);
+    assert.equal(readFileSync(join(root, '.gitignore'), 'utf8'), 'node_modules/\n/.agents/skills/setup-kit/\n');
+  });
+
+  it('should keep a prompt the user edited when installing again', () => {
+    const root = emptyRepo();
+    mkdirSync(join(root, '.cursor/commands'), { recursive: true });
+    writeFileSync(join(root, '.cursor/commands/setup-kit.md'), 'my own text');
+    cli.installSkill(root, { tool: 'cursor' });
+    assert.equal(readFileSync(join(root, '.cursor/commands/setup-kit.md'), 'utf8'), 'my own text');
   });
 
   it('should install the guards and wire them for Claude Code without duplicating hooks', () => {
@@ -84,30 +120,6 @@ describe('npx CLI', () => {
 
   it('should print usage for help', () => {
     assert.match(cli.runCli(['help']), /install-skill/);
-  });
-});
-
-describe('skill evaluation helpers', () => {
-  it('should take the last fenced JSON block from the agent output', () => {
-    const text = 'Analysis...\n```json\n{"mode":"existing"}\n```\nmore\n```json\n{"mode":"new-project","parts":[]}\n```';
-    assert.equal(extractJson(text).mode, 'new-project');
-  });
-
-  it('should report no problems when the analysis matches', () => {
-    const expected = { parts: [{ path: '.', language: 'go' }], has: { api: true, db: false }, notApplicable: [14, 17] };
-    const actual = { mode: 'existing', parts: [{ path: '.', language: 'Go' }], has: { api: true, db: false, frontend: false }, notApplicable: [14, 17, 26] };
-    assert.deepEqual(compareAnalysis(expected, actual), []);
-  });
-
-  it('should list every mismatch', () => {
-    const expected = { mode: 'new-project', parts: [], has: { frontend: true }, notApplicable: [46] };
-    const actual = { mode: 'existing', parts: [{ language: 'typescript' }], has: { frontend: false }, notApplicable: [] };
-    assert.equal(compareAnalysis(expected, actual).length, 5);
-  });
-
-  it('should accept an item reported as already configured instead of not applicable', () => {
-    const expected = { parts: [{ language: 'go' }], has: {}, notApplicable: [14] };
-    assert.deepEqual(compareAnalysis(expected, { parts: [{ language: 'go' }], has: {}, alreadyConfigured: [14] }), []);
   });
 });
 

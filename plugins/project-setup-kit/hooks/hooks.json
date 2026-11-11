@@ -1,0 +1,13 @@
+{
+  "description": "Tell the user when the project was set up with an older kit version or when kit changes wait in .ai-kit/pending",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-notice.mjs\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

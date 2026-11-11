@@ -1,6 +1,6 @@
 # Evaluation before a release
 
-Automated part: `npm run eval` (or the **Skill evaluation** workflow) runs Phase 0–1 of the skill on every fixture and compares the analysis with `expected.json`. Run it first; the manual part below covers what the comparison cannot see.
+Automated part: `npm run eval` (or the **Skill evaluation** workflow) runs the `claude plugin eval` suite in `plugins/project-setup-kit/evals/`: the analysis of every fixture compared with its `expected.json`, and four behavior cases (one question on the first turn, consent before writing, `status` read-only, `remove` asks first), each with and without the plugin. After editing an `expected.json`, run `npm run build-evals`; `npm run check` fails while the cases are out of date. Run the suite first; the manual part below covers the multi-turn flow it cannot see.
 
 ## Manual walk-through
 

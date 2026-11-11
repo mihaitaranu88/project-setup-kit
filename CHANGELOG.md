@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+- `AGENTS.md` keeps only what an agent cannot learn from the code: the questionnaire now skips answers that restate the stack, the folder layout or commands already in the manifest, and rules a check already explains. Research on context files (ETH Zurich, 2026) found that restating the codebase does not help agents and sometimes hurts.
+- More AI tools: `npx … install-skill` copies the guided setup into `.agents/skills/setup-kit/`, the shared Agent Skills folder, and supports `--tool codex|gemini|opencode` besides Copilot and Cursor. Running it again updates the copy; a copy from 0.2.0 in `.ai-kit/setup-kit/` is moved and its prompt repointed.
+- Update notice: with the Claude Code plugin, a session that starts in a project set up with an older kit, or with files waiting in `.ai-kit/pending/`, shows one line saying so. Turn it off with `"settings": { "sessionNotice": false }`.
+- Rules generators: when Ruler or rulesync is used, the kit writes its rules into their source files instead of the generated `AGENTS.md`/`CLAUDE.md`, which the next generator run would overwrite.
+- Clearer catalog rules, found by the new evaluation: lockfile drift (item 19) applies to package managers with a local install folder even before the lockfile is committed and never to Go, Maven, Gradle, Cargo or .NET; env validation (item 20) applies to every backend and to a frontend only when its code reads env variables; one frontend plus one API is not "several services".
+- Guards: a corpus test of 67 real commands (blocked and allowed) for the git, danger and env guards. It fixed two wrong results: `grep "DROP TABLE" migrations/` no longer asks for approval, and `sudo rm -r` on a system path now does. Quoted git commands (`grep "git push"`) stay blocked on purpose: a missed push costs more than a false alarm.
+- The docs consistency check ignores files git ignores, such as the kit's own copy in `.agents/skills/`.
+- Evaluation moved to `claude plugin eval`: 11 cases generated from the fixtures (`npm run build-evals`), each run 3 times with and without the plugin. Besides the analysis of the 7 fixture projects it checks behavior: the first turn asks one thing with a recommendation, a plain request asks before writing, `status` changes nothing, `remove` asks before deleting. Baseline: 11/11 cases pass, score 0.98 with the plugin, mean gain +0.22 over no plugin. `npm run check` fails when the cases are out of date.
+- One-step install line for Claude Code 2.1.275+: `/plugin install project-setup-kit --marketplace mihaitaranu88/project-setup-kit`.
+
 ## 0.2.0
 
 - Profiles: `/setup-kit minimal|team|strict` answers most of the 46 items in advance; the plan is shown once for changes, paid or account-bound items are still asked, and every item keeps its file review.

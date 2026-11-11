@@ -13,7 +13,14 @@ Each line: `Q: question | Default recommendation: answer — why | Enforce: mech
 
 Precedence when answers overlap: a ban on code comments does not cover tool directives — a lint/type disable with a specific rule and a reason (`// eslint-disable-next-line rule -- reason`) is a directive, not a comment, and is allowed where the lint-disable answer allows it. Rules that mention a task key apply only if item 31 found a task app.
 
-Write each answer into `AGENTS.md` as a short imperative rule. Answers with an `Enforce:` mechanism available for this language go to item 2. Durable project facts (category 0, and any answer that records a decision rather than a style rule) also go to `docs/ai-memory/` if item 6 is installed.
+What goes into `AGENTS.md`: only what an agent cannot learn by reading the code. Research on repository context files (ETH Zurich, "Evaluating AGENTS.md", 2026) found that files restating what the code already shows (directory tours, the framework list, how the build works) did not raise task success and sometimes lowered it, because agents follow every instruction and explore more without reaching the right files sooner. Human-written, specific rules helped. So:
+
+- Write a rule when the answer is a decision, a ban, a convention the code does not make obvious, or a trap ("never call X directly, go through Y because Z").
+- Skip it when the answer only repeats what the code already shows: "we use React", "tests are in `tests/`", "run `npm test`" when `package.json` says so. Keep these as Project facts only if item 6 is installed.
+- Skip it when a check enforces the rule and its error message already tells the agent what to do; then `AGENTS.md` needs at most one line pointing at the check.
+- Say the reason in a few words when it is not obvious, so the agent can apply the rule to cases the rule does not name.
+
+Write each kept answer into `AGENTS.md` as a short imperative rule. Answers with an `Enforce:` mechanism available for this language go to item 2. Durable project facts (category 0, and any answer that records a decision rather than a style rule) also go to `docs/ai-memory/` if item 6 is installed.
 
 ## 0. Project facts
 - ★ Q: Which folders or files are the canonical reference implementations the agent should copy? | Default recommendation: list 2–5 paths — agents copy the nearest example | Enforce: AGENTS.md only

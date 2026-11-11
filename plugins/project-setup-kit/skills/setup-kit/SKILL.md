@@ -35,7 +35,7 @@ All paths are relative to this skill's folder.
 - `/setup-kit` with an existing `.ai-kit.json`: same as `update`.
 - `/setup-kit update`: compare the installed kit version and the files in `.ai-kit.json` with the current templates; show what changed; never overwrite a file whose current hash differs from the recorded hash without showing the diff and asking. Then offer items that were never answered.
 - `/setup-kit remove <id>`: list the files and settings recorded for that item, ask for confirmation, remove them, update `AGENTS.md` and `.ai-kit.json`.
-- `/setup-kit status`: print the items with their state (installed, declined, not applicable, pending). Change nothing.
+- `/setup-kit status`: print the items with their state (installed, declined, not applicable, pending), the repository settings still pending, and the files waiting in `.ai-kit/pending/` (`kit.mjs pending list`). Change nothing.
 - `/setup-kit doctor`: check that every installed item still works and change nothing: Node version, `.ai-kit/config.json` parses, each recorded file exists and its hash matches, every guard answers a sample payload correctly, hook wiring points to existing scripts, git hooks are installed, the last CI runs of kit workflows passed (`gh run list`). Report each problem with the fix from `troubleshooting.md` and ask before applying any.
 
 ## Non-negotiable rules

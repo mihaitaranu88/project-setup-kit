@@ -31,7 +31,13 @@ This kit turns those rules into things that are checked automatically: hooks the
 
 ## Install
 
-In Claude Code:
+In Claude Code 2.1.275 or later, one step:
+
+```
+/plugin install project-setup-kit --marketplace mihaitaranu88/project-setup-kit
+```
+
+In older versions:
 
 ```
 /plugin marketplace add mihaitaranu88/project-setup-kit
@@ -47,12 +53,17 @@ To try it from a local clone instead:
 
 Installing changes nothing in your projects. It only makes `/setup-kit` available everywhere.
 
-**GitHub Copilot or Cursor instead of Claude Code?** Copy the same guided setup into your project and run it from your tool:
+**Another AI tool instead of Claude Code?** Copy the same guided setup into `.agents/skills/setup-kit/` (the shared Agent Skills folder, ignored by git) and run it from your tool:
 
 ```sh
-npx github:mihaitaranu88/project-setup-kit install-skill --tool copilot   # then /setup-kit in Copilot Chat (agent mode)
-npx github:mihaitaranu88/project-setup-kit install-skill --tool cursor    # then /setup-kit in Cursor
+npx github:mihaitaranu88/project-setup-kit install-skill --tool copilot    # then /setup-kit in Copilot Chat (agent mode)
+npx github:mihaitaranu88/project-setup-kit install-skill --tool cursor     # then /setup-kit in Cursor
+npx github:mihaitaranu88/project-setup-kit install-skill --tool gemini     # then /setup-kit in Gemini CLI
+npx github:mihaitaranu88/project-setup-kit install-skill --tool codex      # then $setup-kit in Codex
+npx github:mihaitaranu88/project-setup-kit install-skill --tool opencode   # then ask opencode to use the setup-kit skill
 ```
+
+Run the same command again to update the copy.
 
 Only want the guards, without a guided session?
 
@@ -175,7 +186,7 @@ Plus, only for the items you accept: hook wiring in `.claude/settings.json`, git
 | **Languages** | Any. Tool mappings for TypeScript/JavaScript, Python, PHP, Go, Java/Kotlin, C#, Ruby, Rust; ready CI jobs for Node, Python, PHP, Go and Java (Maven/Gradle) |
 | **Frameworks** | Detects the common ones, including backend-as-a-service (Convex, Supabase, Firebase), Flyway/Liquibase migrations and pnpm workspaces |
 | **Git platforms** | GitHub: everything. GitLab, Bitbucket, Azure DevOps: local items work; CI is translated and shown before it is written |
-| **AI tools** | Claude Code: everything (plugin). GitHub Copilot and Cursor: the same guided setup through `npx … install-skill`, plus guards (Cursor hooks are experimental). Tools that read `AGENTS.md` get the rules |
+| **AI tools** | Claude Code: everything (plugin). GitHub Copilot, Cursor, Gemini CLI, Codex and opencode: the same guided setup through `npx … install-skill`; guards for Copilot and Cursor (Cursor hooks are experimental). Tools that read `AGENTS.md` get the rules |
 | **Operating systems** | macOS, Linux and Windows (scripts are Node; hook commands work in Git Bash and PowerShell) |
 | **Needs** | Node.js 20+ on developer machines for the guards and checks. CI installs its own |
 
@@ -205,7 +216,7 @@ npm run check
 
 This runs a consistency check (every template, guide and profile row exists, versions match, icon present) and about 210 tests for the guard, check and CLI scripts.
 
-`npm run eval` runs the skill itself on every fixture project in `tests/fixtures/` with Claude Code and compares its analysis with `expected.json` (it uses tokens). The **Skill evaluation** workflow does the same on GitHub: run it from the Actions tab, or it runs on every `v*` tag; it needs an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` secret. [`tests/EVAL.md`](tests/EVAL.md) covers the manual walk-through of the full flow.
+`npm run eval` runs the plugin's eval suite with `claude plugin eval` (it uses tokens). The cases in `plugins/project-setup-kit/evals/` are generated from `tests/fixtures/*/expected.json` and check the analysis of each fixture project, plus the behavior that matters most: the first turn asks one thing with a recommendation, a plain request asks before writing, `status` changes nothing and `remove` asks before deleting. Every case also runs without the plugin, so the report shows how much the kit adds. The **Skill evaluation** workflow does the same on GitHub: run it from the Actions tab, or it runs on every `v*` tag; it needs an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` secret. [`tests/EVAL.md`](tests/EVAL.md) covers the manual walk-through of the full flow.
 
 ## License
 

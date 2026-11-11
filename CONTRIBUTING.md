@@ -8,7 +8,9 @@ Node.js 20 or newer. No dependencies to install.
 
 ```sh
 npm run check   # consistency check + script tests (runs on Linux, Windows and macOS in CI)
-npm run eval    # runs the skill's analysis on every fixture with Claude Code (uses tokens)
+npm run eval         # claude plugin eval: every case 3 times with and without the plugin (uses tokens, ~$15)
+npm run eval:quick   # one run per case, plugin only (~$3)
+npm run build-evals  # regenerate plugins/project-setup-kit/evals/ after editing tests/fixtures/*/expected.json
 ```
 
 ## Where things live

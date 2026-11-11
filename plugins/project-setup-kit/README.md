@@ -4,4 +4,10 @@ Adds AI-agent files, agent guards, lint and CI checks to any repository, in any 
 
 Answers are stored in `.ai-kit.json`, so `/setup-kit update`, `/setup-kit remove <id>` and `/setup-kit status` work later without asking again.
 
+Install in Claude Code:
+
+```
+/plugin install project-setup-kit --marketplace mihaitaranu88/project-setup-kit
+```
+
 Requirements: Node.js 20+ for the guard and check scripts. Full documentation: see the repository README.

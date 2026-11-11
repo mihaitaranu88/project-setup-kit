@@ -3,10 +3,14 @@ name: Skill evaluation
 on:
   workflow_dispatch:
     inputs:
-      only:
-        description: "Comma-separated fixtures to run (empty = all)"
+      case:
+        description: "Case name glob, e.g. detect-* (empty = all)"
         required: false
         default: ""
+      runs:
+        description: "Runs per case"
+        required: false
+        default: "3"
   push:
     tags: ["v*"]
 
@@ -37,11 +41,30 @@ jobs:
       - name: Install Claude Code
         if: steps.credential.outputs.available == 'true'
         run: npm install -g @anthropic-ai/claude-code
-      - name: Run the skill's analysis on every fixture and compare with expected.json
+      - name: Run the plugin eval suite (with and without the plugin)
         if: steps.credential.outputs.available == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          ONLY: ${{ inputs.only }}
+          CASE: ${{ inputs.case }}
+          RUNS: ${{ inputs.runs || '3' }}
         run: |
-          if [ -n "$ONLY" ]; then node tests/eval-skill.mjs --only "$ONLY"; else node tests/eval-skill.mjs; fi
+          args=(--runs "$RUNS" --json eval-result.json --report eval-report.html)
+          if [ -n "$CASE" ]; then args+=(--case "$CASE"); fi
+          npm run eval -- "${args[@]}"
+      - name: Summarize
+        if: always() && steps.credential.outputs.available == 'true'
+        run: |
+          if [ -f eval-result.json ]; then node -e '
+            const r = require("./eval-result.json");
+            const rows = r.cases.map(c => `| ${c.name} | ${c.aggregates.score.toFixed(2)} | ${c.aggregates.scoreWithout?.toFixed(2) ?? "-"} | ${c.aggregates.delta?.toFixed(2) ?? "-"} |`);
+            console.log(["| case | with | without | delta |", "|---|---|---|---|", ...rows, "", `Cost: $${r.costUsd.toFixed(2)}`].join("\n"));
+          ' >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.credential.outputs.available == 'true'
+        with:
+          name: eval-report
+          path: |
+            eval-result.json
+            eval-report.html
+          if-no-files-found: ignore

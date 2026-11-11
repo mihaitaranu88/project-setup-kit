@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: remove-asks-before-deleting
+tags: [behavior]
+context:
+  scaffold_script: scaffold.sh

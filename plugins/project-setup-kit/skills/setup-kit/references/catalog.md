@@ -30,6 +30,8 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - detect: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/rules/`, `.cursorrules`
 - recommend: yes — one source of rules every AI tool reads.
 - writes: `agents/AGENTS.md.tmpl` → `AGENTS.md`; `agents/CLAUDE.md` → `CLAUDE.md` (Claude); `agents/copilot-instructions.md` → `.github/copilot-instructions.md` (Copilot); `agents/cursor-agents.mdc` → `.cursor/rules/agents.mdc` (Cursor)
+- notes: keep `CLAUDE.md` with `@AGENTS.md` even though recent Claude Code versions read `AGENTS.md` when no `CLAUDE.md` exists: that fallback depends on the version, on a setting the user can turn off and on remote feature flags, so the import is the only way that works for every teammate.
+- notes: when a rules generator is detected (Ruler, rulesync; see detection.md, "AI tools"), the files above are its output: write into its source instead.
 - notes: when `AGENTS.md` already exists, add only the `ai-kit` blocks (at the end); do not add the template's title or the "Team notes" footer — those are for a new file.
 - notes: blocks managed by other tools (marker pairs such as `<!-- convex-ai-start -->…<!-- convex-ai-end -->` or `<!-- BEGIN:nextjs-agent-rules -->…`) belong to those tools: never move, merge or delete them, even when the same block is in both `AGENTS.md` and `CLAUDE.md`; only make sure `CLAUDE.md` contains `@AGENTS.md`.
 - notes: the kit owns only the blocks between `<!-- ai-kit:begin <section> -->` and `<!-- ai-kit:end <section> -->`; everything outside is the team's and is never rewritten. If an `AGENTS.md` without markers exists, keep it and append the kit's blocks at the end. If both `AGENTS.md` and `CLAUDE.md` exist with different content, propose merging into `AGENTS.md` and making `CLAUDE.md` import it; do it only on consent. Run `questionnaire.md` (flow.md, "Item 1").
@@ -163,13 +165,13 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - writes: `repo/.editorconfig`, `repo/.gitattributes` (adapt indent to the detected style)
 
 ### 19 · Lockfile drift warning on push
-- applies-when: the project has a lockfile
+- applies-when: a part whose package manager installs dependencies into a project folder that can fall behind the lockfile — `node_modules/` (npm, pnpm, yarn, bun), a virtualenv (uv, poetry, pipenv), `vendor/` (composer, bundler). Not applicable to Go, Maven, Gradle, Cargo or .NET, which resolve dependencies from a shared cache on every build. The lockfile does not have to exist yet: when the ecosystem fits but no lockfile is committed, the item applies and the recommendation is to commit the lockfile first (there is nothing to compare until then).
 - recommend: yes, as a warning — tests with stale dependencies give false results.
 - writes: `checks/lockfile-check.mjs` → `.ai-kit/scripts/`; pre-push hook entry (pnpm marker: `node_modules/.pnpm/lock.yaml`)
 - notes: warning only, never blocks.
 
 ### 20 · Environment variables validated at startup
-- applies-when: an application (not a library) that reads environment variables
+- applies-when: an application (not a library) configured through environment variables. Every backend or full-stack app counts (a server reads at least a port or a database URL, often through the framework's own config, even when the source shows no `getenv` yet). A frontend-only app counts only when its code reads `import.meta.env`, `process.env` or `NEXT_PUBLIC_*`/`VITE_*` variables; one that reads none is not applicable (say so in the report).
 - detect: zod/envalid/t3-env schema, pydantic-settings, Laravel config validation, viper with required keys
 - recommend: yes — fails at startup with a clear message, not at the first request in production.
 - writes: guidance + code in the project's language from `env-validation/README.md`; keep `.env.example` in sync

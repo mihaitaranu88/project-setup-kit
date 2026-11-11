@@ -26,7 +26,7 @@ Workspaces (`workspaces` in package.json, a `pnpm-workspace.yaml` that has a `pa
 - **Backend-as-a-service**: convex (`convex/schema.ts`), supabase (`supabase/`), firebase (`firebase.json`), appwrite, pocketbase. They have a database without migration files and client-callable functions instead of HTTP routes: items 42–43 usually do not apply, item 44 does (public vs internal functions, security rules).
 - **Hosting with preview integration**: `vercel.json`, `.vercel/`, `netlify.toml`, `wrangler.toml`, `@vercel/*` dependencies, deploy docs mentioning previews.
 - **DB + migrations**: typeorm, prisma, drizzle, knex, sequelize, mikro-orm; alembic, django migrations; laravel/doctrine migrations; goose, golang-migrate, atlas; flyway, liquibase; EF Core; `migrations/` folders.
-- **Several services**: several deployable parts (several Dockerfiles, `docker-compose` with several app services, k8s manifests, `services/` or `apps/` folders).
+- **Several services**: more than one backend service that runs and is deployed on its own (several Dockerfiles or `docker-compose` app services, k8s manifests for several apps, `services/` or `apps/` with more than one server). One frontend plus one API is not several services, even in a monorepo.
 - **Message broker**: amqplib, kafkajs, @azure/service-bus, sqs, nats, celery, laravel queues.
 - **Versioned releases**: library publish config (`"private": false` with `publishConfig`, PyPI build backend, packagist type library), mobile app manifests, existing tags `v*`, `CHANGELOG.md`.
 - **i18n**: i18next, react-intl, vue-i18n, gettext, Laravel `lang/`.
@@ -60,7 +60,8 @@ Generators that refuse a non-empty folder: run them in a temporary sub-folder an
 - GitHub Copilot: `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.github/hooks/`
 - Cursor: `.cursor/`, `.cursorrules`
 - Others that read `AGENTS.md`: Codex, opencode (`.opencode/`), Gemini CLI (`GEMINI.md`)
-- Shared agent skills: `.agents/skills/`, `skills-lock.json` (skills installed for several tools at once); count them as existing skills for item 34 and as roster entries for item 4
+- Shared agent skills: `.agents/skills/`, `skills-lock.json` (skills installed for several tools at once); count them as existing skills for item 34 and as roster entries for item 4. Exception: `.agents/skills/setup-kit/` is this kit's own copy (installed by `npx … install-skill`, ignored by git); it is never a project skill, never goes in the roster and is never edited.
+- Rules generators: `.ruler/` (Ruler), `.rulesync/` or `rulesync.jsonc` (rulesync), `.ai-rules/` or another folder that a script copies into the tool files. When one is present, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/rules/` and the like are generated output: the next `ruler apply` / `rulesync generate` overwrites anything written into them. Write the kit's rule blocks into the generator's source file instead (`.ruler/AGENTS.md`, `.rulesync/rules/*.md`), tell the user to run the generator, and record the source path in `.ai-kit.json`. Point the size budget (item 3) and the docs check (item 4) at the generated files, which are what agents read.
 
 ## Already configured — per item
 

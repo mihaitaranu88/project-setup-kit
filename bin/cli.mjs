@@ -1,19 +1,20 @@
 #!/usr/bin/env node
-import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const SKILL_SOURCE = join(PACKAGE_ROOT, 'plugins', 'project-setup-kit', 'skills', 'setup-kit');
 export const VERSION = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).version;
-export const SKILL_TARGET = '.ai-kit/setup-kit';
-export const TOOLS = ['copilot', 'cursor', 'claude', 'other'];
+export const SKILL_TARGET = '.agents/skills/setup-kit';
+export const LEGACY_SKILL_TARGET = '.ai-kit/setup-kit';
+export const TOOLS = ['copilot', 'cursor', 'codex', 'gemini', 'opencode', 'claude', 'other'];
 
 const USAGE = `project-setup-kit ${VERSION}
 
 Usage (run in the project root):
-  npx github:mihaitaranu88/project-setup-kit install-skill --tool <copilot|cursor|other> [--no-gitignore]
-      Copy the /setup-kit skill into .ai-kit/setup-kit/ and add a prompt your AI tool can run.
+  npx github:mihaitaranu88/project-setup-kit install-skill --tool <copilot|cursor|codex|gemini|opencode|other> [--no-gitignore]
+      Copy the /setup-kit skill into .agents/skills/setup-kit/ (the shared Agent Skills folder) and add a command your AI tool can run.
   npx github:mihaitaranu88/project-setup-kit guards --tool <claude|copilot|cursor> [--force]
       Install only the agent guards (git, destructive commands, .env, protected files) without an AI session.
   npx github:mihaitaranu88/project-setup-kit help
@@ -51,27 +52,63 @@ export function promptFileFor(tool) {
   if (tool === 'cursor') {
     return { path: join('.cursor', 'commands', 'setup-kit.md'), content: `${PROMPT_BODY}\n` };
   }
+  if (tool === 'gemini') {
+    return {
+      path: join('.gemini', 'commands', 'setup-kit.toml'),
+      content: `description = "Set up AI-agent files, guards, checks and CI for this repository, one item at a time"\nprompt = """\n${PROMPT_BODY}\n"""\n`,
+    };
+  }
   return null;
 }
 
+const HOW_TO_RUN = {
+  copilot: 'Run /setup-kit in Copilot Chat (agent mode).',
+  cursor: 'Run /setup-kit in Cursor.',
+  gemini: 'Run /setup-kit in Gemini CLI.',
+  codex: 'Codex finds the skill in .agents/skills: run $setup-kit or ask "set up the kit for this repository".',
+  opencode: 'Ask opencode: "use the setup-kit skill to set up this repository".',
+  other: `Ask your AI agent: "Follow ${SKILL_TARGET}/SKILL.md".`,
+};
+
+export function howToRun(tool) {
+  return HOW_TO_RUN[tool] ?? HOW_TO_RUN.other;
+}
+
+function removeLegacyCopy(root) {
+  const legacy = join(root, LEGACY_SKILL_TARGET);
+  if (!existsSync(join(legacy, 'SKILL.md'))) return false;
+  rmSync(legacy, { recursive: true, force: true });
+  const gitignore = join(root, '.gitignore');
+  if (existsSync(gitignore)) {
+    const lines = readFileSync(gitignore, 'utf8').split(/\r?\n/);
+    const kept = lines.filter(line => line !== `/${LEGACY_SKILL_TARGET}/`);
+    if (kept.length !== lines.length) writeFileSync(gitignore, kept.join('\n'));
+  }
+  return true;
+}
+
 export function installSkill(root, { tool, gitignore = true }) {
-  if (!TOOLS.includes(tool)) throw new Error(`--tool must be one of: ${TOOLS.join(', ')}`);
+  if (!TOOLS.includes(tool)) throw new Error(`--tool must be one of: ${TOOLS.filter(name => name !== 'claude').join(', ')}`);
   if (tool === 'claude') throw new Error('Claude Code installs the plugin directly: /plugin marketplace add mihaitaranu88/project-setup-kit');
+  const migrated = removeLegacyCopy(root);
   const target = join(root, SKILL_TARGET);
   mkdirSync(dirname(target), { recursive: true });
+  rmSync(target, { recursive: true, force: true });
   cpSync(SKILL_SOURCE, target, { recursive: true, force: true });
   writeFileSync(join(target, 'VERSION'), `${VERSION}\n`);
   const written = [toPosix(SKILL_TARGET)];
   const prompt = promptFileFor(tool);
   if (prompt) {
-    mkdirSync(dirname(join(root, prompt.path)), { recursive: true });
-    if (!existsSync(join(root, prompt.path))) {
-      writeFileSync(join(root, prompt.path), prompt.content);
+    const promptPath = join(root, prompt.path);
+    mkdirSync(dirname(promptPath), { recursive: true });
+    const current = existsSync(promptPath) ? readFileSync(promptPath, 'utf8') : null;
+    if (current === null || current.includes(LEGACY_SKILL_TARGET)) {
+      writeFileSync(promptPath, prompt.content);
       written.push(toPosix(prompt.path));
     }
   }
   if (gitignore && appendLineOnce(join(root, '.gitignore'), `/${toPosix(SKILL_TARGET)}/`)) written.push('.gitignore');
-  return { written, prompt };
+  return { written, prompt, migrated };
 }
 
 const GUARD_WIRING = {
@@ -165,11 +202,9 @@ export function runCli(argv, cwd = process.cwd()) {
   if (!command || command === 'help' || command === '--help') return USAGE;
   if (command === 'install-skill') {
     const tool = readOption(args, 'tool') ?? 'other';
-    const { written, prompt } = installSkill(cwd, { tool, gitignore: !args.includes('--no-gitignore') });
-    const how = prompt
-      ? `Run it from your AI tool with the prompt in ${prompt.path}${tool === 'copilot' ? ' (/setup-kit in Copilot Chat agent mode)' : ' (/setup-kit in Cursor)'}.`
-      : `Ask your AI agent: "Follow ${SKILL_TARGET}/SKILL.md".`;
-    return `Wrote: ${written.join(', ')}\n${how}`;
+    const { written, migrated } = installSkill(cwd, { tool, gitignore: !args.includes('--no-gitignore') });
+    const moved = migrated ? `\nMoved the earlier copy from ${LEGACY_SKILL_TARGET}/ to ${SKILL_TARGET}/.` : '';
+    return `Wrote: ${written.join(', ')}${moved}\n${howToRun(tool)}`;
   }
   if (command === 'guards') {
     const tool = readOption(args, 'tool');

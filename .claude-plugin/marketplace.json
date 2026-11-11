@@ -11,7 +11,7 @@
       "name": "project-setup-kit",
       "source": "./plugins/project-setup-kit",
       "description": "Analyzes a project, asks only what is not configured yet, and adds AGENTS.md, agent guards, lint/CI checks and GitHub settings one item at a time, with explicit consent.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "productivity",
       "keywords": [
         "agents",

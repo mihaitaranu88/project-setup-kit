@@ -4,7 +4,7 @@ Committed at the repo root. It is the kit's memory of this project: what was ask
 
 ```json
 {
-  "kitVersion": "0.2.0",
+  "kitVersion": "0.3.0",
   "updatedAt": "2026-11-10",
   "context": {
     "aiTools": ["claude", "copilot"],
@@ -57,3 +57,7 @@ Each item lists its paths in `items.<id>.files`. The top-level `files` map holds
 ## Remove
 
 `/setup-kit remove <id>`: show the files and settings recorded for the item. A file shared with another installed item is not deleted: remove only this item's part (show the diff). On confirmation delete files owned only by this item, revert merged blocks (show the diff), remove the item's rule from `AGENTS.md`, update `files`, and set the state to `declined`.
+
+## Session notice
+
+With the Claude Code plugin, a `SessionStart` hook reads `.ai-kit.json` when a session starts and tells the user, in one or two lines, when the installed kit is newer than `kitVersion` or when files wait in `.ai-kit/pending/`. It never changes anything and says nothing for projects without `.ai-kit.json`. Set `"settings": { "sessionNotice": false }` to turn it off for a project.
