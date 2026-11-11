@@ -47,6 +47,15 @@ for (const fixture of ['ts-app', 'python-app', 'php-app', 'go-app', 'java-app', 
   if (!existsSync(join(ROOT, 'tests/fixtures', fixture, 'expected.json'))) problems.push(`fixture ${fixture} has no expected.json`);
 }
 
+const profiles = read('plugins/project-setup-kit/skills/setup-kit/references/profiles.md');
+const profileIds = [...profiles.matchAll(/^\| (\d+) \| /gm)].map(match => Number(match[1]));
+if (profileIds.join(',') !== expected.join(',')) problems.push(`profiles.md must list items 1..${itemIds.length} in order`);
+for (const line of profiles.split('\n').filter(row => /^\| \d+ \| /.test(row))) {
+  const cells = line.split('|').slice(3, 6).map(cell => cell.trim().split(/[ ,]/)[0]);
+  if (cells.some(cell => !['yes', 'no', 'ask'].includes(cell))) problems.push(`profiles.md has an invalid answer: ${line}`);
+}
+if (!existsSync(join(ROOT, 'plugins/project-setup-kit/.claude-plugin/icon.png'))) problems.push('plugin icon is missing');
+
 if (problems.length > 0) {
   for (const problem of problems) process.stdout.write(`✖ ${problem}\n`);
   process.exitCode = 1;

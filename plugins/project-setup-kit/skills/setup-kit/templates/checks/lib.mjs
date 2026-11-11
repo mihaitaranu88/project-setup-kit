@@ -22,6 +22,11 @@ export function git(args, options = {}) {
   });
 }
 
+export function quoteForShell(value, platform = process.platform) {
+  if (platform === 'win32') return `"${value.replace(/"/g, '""')}"`;
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
 export function isCi() {
   return process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 }

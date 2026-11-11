@@ -57,9 +57,13 @@ Ask these one at a time, each with your recommendation from the analysis:
 4. Solo or team? Team enables CODEOWNERS (12) and shared memory (6) recommendations.
 5. Is Node.js 20+ available on developer machines and CI? The kit's guard and check scripts are Node scripts. If not, offer to port the needed scripts to the project's language, or skip those items.
 
+6. Profile: minimal, team, strict, or custom (one by one)? See `profiles.md`; recommend from the answers above. A profile can also be passed as an argument: `/setup-kit minimal|team|strict`.
+
 Store the answers in `.ai-kit.json` under `context`.
 
 ## Phase 3 — items
+
+With a profile, follow `profiles.md` ("How the agent uses a profile") and then the per-item steps below for the items that are installed or asked. Without one (custom), go item by item.
 
 Build the list: all catalog items, minus already configured, minus not applicable, ordered by group (A→H) and `depends-on`.
 

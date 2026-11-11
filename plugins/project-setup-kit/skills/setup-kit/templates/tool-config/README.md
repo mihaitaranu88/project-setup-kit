@@ -20,4 +20,4 @@ Copy only the blocks for the items the user accepted. Replace `{{…}}` placehol
 
 Never add `Read(.env*)` to `permissions.deny`: deny rules win over allow rules, so it would also block `.env.example`. The env guard handles the allowlist.
 
-`post-edit-check.mjs` quotes the file path for POSIX shells. On Windows-only teams, replace `{file}` quoting or run the hook through Git Bash.
+File paths in hook and ratchet commands are quoted for the platform (`'…'` on macOS/Linux, `"…"` on Windows). On Windows, Claude Code runs hook commands through Git Bash when it is installed; keep the `node "$CLAUDE_PROJECT_DIR/…"` form, which works in both.

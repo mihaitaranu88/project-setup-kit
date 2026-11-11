@@ -212,5 +212,9 @@
     "orderCheck": true,
     "ignorePattern": null,
     "orderFile": null
+  },
+  "worktree": {
+    "install": "{{INSTALL_COMMAND}}",
+    "baseBranch": null
   }
 }

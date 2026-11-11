@@ -45,6 +45,19 @@ To try it from a local clone instead:
 
 Installing changes nothing in your projects. It only makes `/setup-kit` available everywhere.
 
+**GitHub Copilot or Cursor instead of Claude Code?** Copy the same guided setup into your project and run it from your tool:
+
+```sh
+npx github:mihaitaranu88/project-setup-kit install-skill --tool copilot   # then /setup-kit in Copilot Chat (agent mode)
+npx github:mihaitaranu88/project-setup-kit install-skill --tool cursor    # then /setup-kit in Cursor
+```
+
+Only want the guards, without a guided session?
+
+```sh
+npx github:mihaitaranu88/project-setup-kit guards --tool claude   # or copilot, cursor
+```
+
 ## Run
 
 Open a project in Claude Code and type:
@@ -62,6 +75,16 @@ A session goes like this:
 5. **Repository settings last.** Branch protection, required checks and secrets are collected in one list. They run only after you approve that exact list, and you type secrets yourself.
 
 Your answers are saved in `.ai-kit.json`, so you can stop at any point and continue later.
+
+**In a hurry?** Start with a profile and review the plan once instead of answering every item:
+
+```
+/setup-kit minimal   # solo projects and prototypes
+/setup-kit team      # shared repos with PRs and reviews
+/setup-kit strict    # production or client work
+```
+
+You still see the full list before anything is installed, and you still review the files after each item. Items that cost money or need an account (AI review, Sonar, previews) are always asked.
 
 | Command | What it does |
 |---|---|
@@ -150,7 +173,8 @@ Plus, only for the items you accept: hook wiring in `.claude/settings.json`, git
 | **Languages** | Any. Tool mappings for TypeScript/JavaScript, Python, PHP, Go, Java/Kotlin, C#, Ruby, Rust; ready CI jobs for Node, Python, PHP, Go and Java (Maven/Gradle) |
 | **Frameworks** | Detects the common ones, including backend-as-a-service (Convex, Supabase, Firebase), Flyway/Liquibase migrations and pnpm workspaces |
 | **Git platforms** | GitHub: everything. GitLab, Bitbucket, Azure DevOps: local items work; CI is translated and shown before it is written |
-| **AI tools** | Claude Code: everything. GitHub Copilot: instructions, guards, roles and prompts. Cursor: instructions, commands and guards (experimental). Tools that read `AGENTS.md` get the rules |
+| **AI tools** | Claude Code: everything (plugin). GitHub Copilot and Cursor: the same guided setup through `npx … install-skill`, plus guards (Cursor hooks are experimental). Tools that read `AGENTS.md` get the rules |
+| **Operating systems** | macOS, Linux and Windows (scripts are Node; hook commands work in Git Bash and PowerShell) |
 | **Needs** | Node.js 20+ on developer machines for the guards and checks. CI installs its own |
 
 ## FAQ
@@ -177,7 +201,9 @@ This kit does three things they do not: it asks only about what is missing, it c
 npm run check
 ```
 
-This runs a consistency check (every template and guide the catalog references exists, versions match) and about 190 tests for the guard and check scripts. Before a release, follow [`tests/EVAL.md`](tests/EVAL.md): it runs the skill on the fixture projects in `tests/fixtures/` and compares the analysis with `expected.json`.
+This runs a consistency check (every template, guide and profile row exists, versions match, icon present) and about 210 tests for the guard, check and CLI scripts.
+
+`npm run eval` runs the skill itself on every fixture project in `tests/fixtures/` with Claude Code and compares its analysis with `expected.json` (it uses tokens). The **Skill evaluation** workflow does the same on GitHub: run it from the Actions tab, or it runs on every `v*` tag; it needs an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` secret. [`tests/EVAL.md`](tests/EVAL.md) covers the manual walk-through of the full flow.
 
 ## License
 

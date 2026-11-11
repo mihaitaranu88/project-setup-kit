@@ -1,6 +1,6 @@
 ---
 name: setup-kit
-description: Set up or update AI-agent files, agent guards, lint/CI checks and repository settings in the current project, in any language. Use when the user runs /setup-kit, asks to "set up the kit", "add AGENTS.md and checks", "configure agent hooks / CI / Sonar / Dependabot for this repo", or wants to update or remove an item the kit installed earlier. Supports `/setup-kit`, `/setup-kit update`, `/setup-kit remove <item>` and `/setup-kit status`.
+description: Set up or update AI-agent files (optionally with a minimal, team or strict profile), agent guards, lint/CI checks and repository settings in the current project, in any language. Use when the user runs /setup-kit, asks to "set up the kit", "add AGENTS.md and checks", "configure agent hooks / CI / Sonar / Dependabot for this repo", or wants to update or remove an item the kit installed earlier. Supports `/setup-kit`, `/setup-kit update`, `/setup-kit remove <item>` and `/setup-kit status`.
 ---
 
 # Project setup kit
@@ -22,6 +22,7 @@ All paths are relative to this skill's folder.
 | `references/questionnaire.md` | The rule question bank used by item 1 to fill `AGENTS.md`. |
 | `references/state-file.md` | Schema of `.ai-kit.json` and how update/remove work. |
 | `references/platforms.md` | GitHub (full support) and other platforms (guide-only). |
+| `references/profiles.md` | Presets (minimal, team, strict) that answer most items in advance; the user still reviews the plan and every file. |
 | `references/troubleshooting.md` | What to do when a command, tool, hook, CI run or repository setting fails. Read it on the first error. |
 | `references/guides/*.md` | Step-by-step guides shown when the user says yes to an item that needs external setup. |
 | `templates/**` | Files you copy into the project and adapt. Never copy blindly: adapt to the detected language, paths and answers. |
@@ -30,6 +31,7 @@ All paths are relative to this skill's folder.
 ## Modes
 
 - `/setup-kit` with no state file: full setup (flow.md, all phases).
+- `/setup-kit minimal|team|strict`: full setup with that profile preselected (`profiles.md`).
 - `/setup-kit` with an existing `.ai-kit.json`: same as `update`.
 - `/setup-kit update`: compare the installed kit version and the files in `.ai-kit.json` with the current templates; show what changed; never overwrite a file whose current hash differs from the recorded hash without showing the diff and asking. Then offer items that were never answered.
 - `/setup-kit remove <id>`: list the files and settings recorded for that item, ask for confirmation, remove them, update `AGENTS.md` and `.ai-kit.json`.

@@ -295,8 +295,8 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 ### 37 · Git worktree per task
 - applies-when: always asked
 - recommend: only if the user often runs several agents at once.
-- writes: `worktree/new-worktree.sh` → `.ai-kit/scripts/new-worktree.sh`
-- notes: copies `.env*` that are git-ignored, installs dependencies, prints the path; `--remove` cleans up.
+- writes: `checks/worktree.mjs` → `.ai-kit/scripts/worktree.mjs` (Node, works on Windows too); `worktree` in `.ai-kit/config.json` (`install` command, optional `baseBranch`)
+- notes: `worktree.mjs new <branch> [base]` creates a sibling folder, copies git-ignored `.env*` files, installs dependencies and prints the path; `worktree.mjs remove <branch>` refuses when there are uncommitted changes.
 
 ## G. Git and PR conventions
 

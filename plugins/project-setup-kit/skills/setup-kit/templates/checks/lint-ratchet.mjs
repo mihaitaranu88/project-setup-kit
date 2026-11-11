@@ -1,17 +1,13 @@
 import { realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { REPO_ROOT, annotate, listChangedFiles, loadKitConfig, readChangedLines, resolveDiffScope } from './lib.mjs';
+import { REPO_ROOT, annotate, listChangedFiles, loadKitConfig, quoteForShell, readChangedLines, resolveDiffScope } from './lib.mjs';
 
 const SEVERITY_PREFIX = /^\s*(?:\[(?:WARN|WARNING|ERROR|INFO|FATAL)\]\s+|(?:warning|error|WARN|ERROR):\s+)/;
 const FINDING_FORMATS = [
   /^(?:\.\/)?([^:\s[][^:]*?):(\d+)(?::\d+)?[:\s]\s*(.*)$/,
   /^(?:\.\/)?([^:\s[][^:]*?):\[(\d+)(?:,\d+)?\]\s*(.*)$/,
 ];
-
-function quoteForShell(value) {
-  return `'${value.replace(/'/g, `'\\''`)}'`;
-}
 
 function matchFinding(line) {
   const text = line.replace(SEVERITY_PREFIX, '');

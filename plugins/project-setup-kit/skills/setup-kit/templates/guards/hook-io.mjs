@@ -57,6 +57,11 @@ export function normalizeToolCall(raw) {
   };
 }
 
+export function quoteForShell(value, platform = process.platform) {
+  if (platform === 'win32') return `"${value.replace(/"/g, '""')}"`;
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
 export function formatDecision(host, reason, decision = 'deny') {
   if (host === 'claude') {
     return {

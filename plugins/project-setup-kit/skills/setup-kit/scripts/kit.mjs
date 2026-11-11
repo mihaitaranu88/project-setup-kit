@@ -8,7 +8,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const SKILL_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const TEMPLATES_DIR = join(SKILL_DIR, 'templates');
-export const KIT_VERSION = JSON.parse(readFileSync(join(SKILL_DIR, '..', '..', '.claude-plugin', 'plugin.json'), 'utf8')).version;
+export function readKitVersion(skillDir = SKILL_DIR) {
+  const pluginManifest = join(skillDir, '..', '..', '.claude-plugin', 'plugin.json');
+  if (existsSync(pluginManifest)) return JSON.parse(readFileSync(pluginManifest, 'utf8')).version;
+  const versionFile = join(skillDir, 'VERSION');
+  if (existsSync(versionFile)) return readFileSync(versionFile, 'utf8').trim();
+  return '0.0.0';
+}
+
+export const KIT_VERSION = readKitVersion();
 export const STATE_FILE = '.ai-kit.json';
 
 const USAGE = `Usage (run from the project root):

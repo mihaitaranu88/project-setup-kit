@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- Profiles: `/setup-kit minimal|team|strict` answers most of the 46 items in advance; the plan is shown once for changes, paid or account-bound items are still asked, and every item keeps its file review.
+- Copilot and Cursor: `npx github:mihaitaranu88/project-setup-kit install-skill --tool copilot|cursor` copies the guided setup into `.ai-kit/setup-kit/` with a `/setup-kit` prompt for the tool; `… guards --tool claude|copilot|cursor` installs only the agent guards, merging existing hook settings.
+- Windows: file paths in hook and ratchet commands are quoted for the platform; the worktree helper is now a Node script (`worktree.mjs new|remove`); danger-guard also recognizes broad `Remove-Item -Recurse`, `rd /s` and `rmdir /s` deletes.
+- Skill evaluation: `npm run eval` and a manual/tag-triggered GitHub workflow run the skill's analysis on every fixture with Claude Code and compare it with `expected.json`.
+- Plugin icon.
+
 ## 0.1.0 — first public release
 
 - `/setup-kit` skill: analyzes the repository, asks a few context questions, then goes through 46 items in 8 groups one at a time, each with a recommendation and a reason. Nothing is written without consent; every change is listed for review before the next item. Repository settings (branch protection, required checks, secrets) are collected into one final step.

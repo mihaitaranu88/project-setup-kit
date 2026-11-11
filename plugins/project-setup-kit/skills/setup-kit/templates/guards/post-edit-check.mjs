@@ -2,13 +2,9 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { loadKitConfig, normalizeToolCall, readStdin, resolveCwd } from './hook-io.mjs';
+import { loadKitConfig, normalizeToolCall, quoteForShell, readStdin, resolveCwd } from './hook-io.mjs';
 
 const MAX_REPORT_CHARS = 4000;
-
-function quoteForShell(value) {
-  return `'${value.replace(/'/g, `'\\''`)}'`;
-}
 
 export function selectCommands(filePath, rules) {
   return rules

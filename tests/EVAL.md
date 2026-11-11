@@ -1,4 +1,8 @@
-# Manual evaluation before a release
+# Evaluation before a release
+
+Automated part: `npm run eval` (or the **Skill evaluation** workflow) runs Phase 0–1 of the skill on every fixture and compares the analysis with `expected.json`. Run it first; the manual part below covers what the comparison cannot see.
+
+## Manual walk-through
 
 The script tests (`npm test`) cover the guard and check scripts. The skill itself is instructions for a model, so it is evaluated by running it on the fixtures.
 

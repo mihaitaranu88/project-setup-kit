@@ -11,6 +11,8 @@ export const PACKS = {
     patterns: [
       { name: 'delete a broad path recursively', regex: new RegExp(`\\brm\\s+(?:-[a-zA-Z]+\\s+|--[a-z-]+\\s+)*?-[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:-[a-zA-Z]+\\s+)*${BROAD_RM_TARGET}`) },
       { name: 'delete a broad path recursively', regex: new RegExp(`\\brm\\s+(?:-[a-zA-Z]+\\s+)*--recursive\\s+(?:-[a-zA-Z]+\\s+|--[a-z-]+\\s+)*${BROAD_RM_TARGET}`) },
+      { name: 'delete a broad path recursively', regex: /\b(?:Remove-Item|rm|ri|del|erase)\b[^;&|]*-Recurse\b[^;&|]*?(?:\s|^)(?:[A-Za-z]:\\?|\\|~|\$HOME|\$env:USERPROFILE|\.|\.\.|\*)(?:\\\*)?(?=\s|$|[;&|)"'])/i },
+      { name: 'delete a broad path recursively', regex: /\b(?:rd|rmdir)\s+(?:\/[sq]\s+)*\/s\b[^;&|]*?\s(?:[A-Za-z]:\\?|\\|%USERPROFILE%|\.|\.\.)(?=\s|$|[;&|)"'])/i },
       { name: 'format or overwrite a disk', regex: /\b(?:mkfs(?:\.\w+)?|dd\s+[^;&|]*\bof=\/dev\/)/ },
       { name: 'make files world-writable', regex: /\bchmod\s+(?:-[a-zA-Z]*R[a-zA-Z]*\s+)+0?777\b/ },
     ],
