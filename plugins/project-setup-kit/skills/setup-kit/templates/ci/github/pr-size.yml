@@ -12,7 +12,7 @@ jobs:
   size:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         env:
           MAX_LINES: "{{MAX_CHANGED_LINES}}"
           IGNORED: "(^|/)(package-lock\\.json|pnpm-lock\\.yaml|yarn\\.lock|composer\\.lock|poetry\\.lock|uv\\.lock|go\\.sum|Cargo\\.lock)$|__snapshots__/|\\.snap$|(^|/)(dist|build|generated)/|{{EXTRA_IGNORED_REGEX}}"

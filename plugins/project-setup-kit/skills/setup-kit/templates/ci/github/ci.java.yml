@@ -5,10 +5,10 @@ java:
     run:
       working-directory: "{{PART_PATH}}"
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         persist-credentials: false
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v6
       with:
         distribution: temurin
         java-version: "{{JAVA_VERSION}}"
@@ -21,6 +21,6 @@ java:
       run: ./gradlew --no-daemon check build
     - name: Submit the Gradle dependency graph for dependency review
       if: "{{IS_GRADLE}}"
-      uses: gradle/actions/dependency-submission@v4
+      uses: gradle/actions/dependency-submission@v6
       with:
         build-root-directory: "{{PART_PATH}}"

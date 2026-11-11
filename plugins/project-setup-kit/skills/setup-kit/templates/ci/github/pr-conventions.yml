@@ -17,10 +17,10 @@ jobs:
     if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "{{NODE_VERSION}}"
       - env:
@@ -31,7 +31,7 @@ jobs:
     if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         env:
           TITLE_PATTERN: "{{PR_TITLE_PATTERN}}"
           TITLE_EXAMPLES: "{{PR_TITLE_EXAMPLES}}"
@@ -50,7 +50,7 @@ jobs:
     if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         env:
           TASK_KEY_PATTERN: "{{TASK_KEY_PATTERN}}"
           REQUIRED_SECTIONS: "{{REQUIRED_SECTIONS}}"

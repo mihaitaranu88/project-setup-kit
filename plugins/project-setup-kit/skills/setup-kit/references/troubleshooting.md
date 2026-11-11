@@ -78,7 +78,7 @@ AI tools protect some paths themselves. Claude Code asks before every write to `
 
 | Symptom | Check | Options |
 |---|---|---|
-| `Unable to locate executable file: pnpm` in setup-node | workflow has `cache: pnpm` | Add `pnpm/action-setup@v4` before setup-node |
+| `Unable to locate executable file: pnpm` in setup-node | workflow has `cache: pnpm` | Add `pnpm/action-setup@v6` before setup-node |
 | Workflow fails on its first run | `gh run list --limit 5`, `gh run view <id> --log-failed` | Kit-introduced (wrong path, command, version) → fix and show the diff; project problem (tests already failing on the base branch) → report it, do not hide it |
 | `Resource not accessible by integration` | job `permissions` | Add the single missing permission to that job |
 | Secret missing | `gh secret list` | The user sets it with `gh secret set <NAME>`; never ask them to paste it in the chat |

@@ -21,6 +21,7 @@ Workflow templates:
 
 - Every template is now rendered and checked with actionlint and zizmor in the kit's CI. This found and fixed five script-injection patterns (`${{ github.base_ref }}` inside `run:`, now passed through `env:`), checkouts that kept the git token on disk (`persist-credentials: false`), and a preview workflow with write permission on every job.
 - The kit's own workflows are pinned to SHAs, scanned the same way, and updated by Dependabot.
+- Every action in the templates moved to its current major version after reading each major's release notes: `actions/checkout@v7`, `setup-node@v7`, `setup-python@v7`, `setup-go@v7`, `setup-java@v6`, `github-script@v9`, `pnpm/action-setup@v6`, `release-please-action@v5`, `gradle/actions@v6`, `golangci-lint-action@v9`, `sonarqube-scan-action@v8`, and exact versions where no major tag is published (`astral-sh/setup-uv@v10.3.3`, `dependency-review-action@v5.0.0`). These run on Node 24 and need GitHub-hosted runners or self-hosted runners 2.327.1 or newer.
 
 Detection: TypeScript is recognized from a `typescript` dependency, `.ts` files or `<script lang="ts">`, not only from `tsconfig.json`.
 

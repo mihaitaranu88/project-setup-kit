@@ -10,13 +10,13 @@ jobs:
   diff-coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
       - name: Tests with coverage (lcov or cobertura XML)
         run: "{{TEST_WITH_COVERAGE_COMMAND}}"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install diff-cover

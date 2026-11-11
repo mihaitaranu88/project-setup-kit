@@ -23,7 +23,7 @@ jobs:
       - name: Debounce rapid pushes
         if: github.event.action == 'synchronize'
         run: sleep "${{ vars.AI_REVIEW_DEBOUNCE_SECONDS || 120 }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0

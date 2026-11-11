@@ -380,7 +380,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 ### 48 · GitHub Actions hardening
 - applies-when: GitHub with workflows (the kit's or the project's own)
 - detect: every `uses:` pinned to a 40-character SHA; `zizmor` or `actionlint` in CI; Dependabot `github-actions` ecosystem
-- recommend: yes — a tag such as `@v4` can be moved to malicious code (the 2025 tj-actions incident leaked secrets from thousands of repositories this way); workflows also run with tokens, so script injection and broad permissions matter.
+- recommend: yes — a tag such as `@v7` can be moved to malicious code (the 2025 tj-actions incident leaked secrets from thousands of repositories this way); workflows also run with tokens, so script injection and broad permissions matter.
 - writes: pins every action with `node <skill-dir>/scripts/kit.mjs pin-actions .github/workflows/*.yml` (resolves each tag to its commit with `git ls-remote`, keeps the tag as a note; then `kit.mjs record` the changed files); `ci/github/workflow-security.yml` (actionlint + zizmor); the `github-actions` entry in `.github/dependabot.yml` (item 29's template has it) so pinned SHAs keep getting updates
 - notes: run `pin-actions` after every other CI item, at the end of group D/E, so all workflows are pinned in one pass; if item 29 was declined, offer Dependabot for actions alone, because pins without updates go stale. Fix zizmor findings in the project's own workflows only with consent, one file at a time: move `${{ github.* }}` values used in `run:` into `env:`, add `persist-credentials: false` to checkouts that do not push, and give each job the smallest `permissions`. Never pin to a SHA you did not resolve yourself.
 

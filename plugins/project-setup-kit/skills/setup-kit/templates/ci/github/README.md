@@ -16,7 +16,7 @@
 - `bundle-size.yml`: also write `ci/.size-limit.json` to the frontend folder as `.size-limit.json` and add the dev dependencies `size-limit` and `@size-limit/preset-app` (or `@size-limit/file` for static output). Current size-limit needs Node 22+; with an older Node pin `size-limit@11`.
 - PR conventions skip bot PRs (Dependabot, Renovate); the branch check exempts `dependabot/*` and `renovate/*`.
 - Replace every `{{…}}` with the project's real values. Drop steps whose item was declined (for example the dead-code step when item 24 is "no"; replace `if: "{{ITEM_24}}"` by removing the step or the `if`).
-- Pin third-party actions to a full commit SHA with the version as a trailing note when the user agrees (safer against tag hijacking). The versions written here are major tags; resolve the current SHA with `gh api repos/<owner>/<action>/git/ref/tags/<tag>`.
+- Pin third-party actions to a full commit SHA with the version as a trailing note when the user agrees (safer against tag hijacking). The versions written here are the current major tags (an exact version where the action publishes no major tag, such as `astral-sh/setup-uv` and `actions/dependency-review-action`); item 48 resolves them to SHAs with `kit.mjs pin-actions`. Before writing a workflow, check that each major is still the latest (`git ls-remote --tags https://github.com/<owner>/<action>`) and read the release notes of any newer major before using it.
 - Every workflow sets the minimum `permissions` it needs. Keep it that way.
 
 | File | Item |
