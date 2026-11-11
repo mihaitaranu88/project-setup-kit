@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -48,6 +48,7 @@ function docker(args, cwd) {
 
 function main() {
   const work = mkdtempSync(join(tmpdir(), 'kit-workflows-'));
+  chmodSync(work, 0o755);
   try {
     mkdirSync(join(work, '.github', 'workflows'), { recursive: true });
     for (const [name, content] of Object.entries(renderAll())) writeFileSync(join(work, '.github', 'workflows', name), content);
