@@ -1,5 +1,7 @@
 # project-setup-kit
 
+[![Test](https://github.com/mihaitaranu88/project-setup-kit/actions/workflows/test.yml/badge.svg)](https://github.com/mihaitaranu88/project-setup-kit/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Give any repository a solid setup for AI coding agents in one guided session.**
 
 `/setup-kit` is a Claude Code plugin. It reads your project, asks only about what is missing, and adds the files, guards and checks that keep AI agents (and humans) on track: an `AGENTS.md` with your team's rules, hooks that stop dangerous commands, lint rules against typical AI mistakes, CI on pull requests, secret scanning, and more. It works with any language and adds nothing without your consent.
