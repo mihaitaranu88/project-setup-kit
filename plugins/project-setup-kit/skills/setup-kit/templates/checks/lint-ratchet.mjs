@@ -33,7 +33,7 @@ export function keepChangedLineFindings(findings, changedLines, root) {
 }
 
 export function buildCommand(template, files) {
-  return template.replaceAll('{files}', files.map(quoteForShell).join(' '));
+  return template.replaceAll('{files}', files.map(file => quoteForShell(file)).join(' '));
 }
 
 function runCheck(check, changedFiles, changedLines) {

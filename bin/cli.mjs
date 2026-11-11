@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const SKILL_SOURCE = join(PACKAGE_ROOT, 'plugins', 'project-setup-kit', 'skills', 'setup-kit');
 export const VERSION = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).version;
-export const SKILL_TARGET = join('.ai-kit', 'setup-kit');
+export const SKILL_TARGET = '.ai-kit/setup-kit';
 export const TOOLS = ['copilot', 'cursor', 'claude', 'other'];
 
 const USAGE = `project-setup-kit ${VERSION}
