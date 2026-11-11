@@ -9,7 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tests/scripts/",
-    "check": "node tests/check-kit.mjs && node --test tests/scripts/"
+    "test": "node --test tests/scripts/*.test.mjs",
+    "check": "node tests/check-kit.mjs && node --test tests/scripts/*.test.mjs"
   }
 }
