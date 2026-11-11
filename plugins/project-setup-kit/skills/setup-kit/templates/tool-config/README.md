@@ -1,0 +1,23 @@
+# Wiring the guards per tool
+
+All guards live in `.ai-kit/hooks/` and share `hook-io.mjs`, which reads each tool's payload and answers in that tool's format.
+
+| Tool | Where | Template | Items |
+|---|---|---|---|
+| Claude Code | `.claude/settings.json` (merge; keep the user's keys) | `claude/settings.json` | 9 = PreToolUse git-guard, danger-guard, protect-guard · 10 = PreToolUse env-guard · 11 = `permissions.allow` · 36 = PostToolUse post-edit-check + Stop stop-check |
+| GitHub Copilot (CLI / coding agent) | `.github/hooks/*.json` | `copilot/*.json` | 9, 10 |
+| Cursor | `.cursor/hooks.json` | `cursor/hooks.json` | 9, 10 (experimental: check the current Cursor hooks docs before installing) |
+
+Decisions: git-guard and env-guard always deny. danger-guard and protect-guard answer `ask` by default (Claude Code and Cursor show an approval prompt to the developer); Copilot has no ask, so they deny there. Set `mode: "deny"` in `.ai-kit/config.json` for unattended runs.
+
+Install the hooks into the project's `.claude/settings.json`, not through a plugin's `hooks/hooks.json`: plugin-installed Stop hooks have had bugs with exit code 2, and the same hook in both places runs twice.
+
+stop-check exits early when `stop_hook_active` is true, so it forces at most one extra round before the agent may stop.
+
+Permission rules use the current syntax: `Bash(cmd)` for the exact command and `Bash(cmd *)` for the command with arguments (the older `Bash(cmd:*)` form is deprecated).
+
+Copy only the blocks for the items the user accepted. Replace `{{…}}` placeholders in `permissions.allow` with the project's real commands and drop the lines that do not apply.
+
+Never add `Read(.env*)` to `permissions.deny`: deny rules win over allow rules, so it would also block `.env.example`. The env guard handles the allowlist.
+
+`post-edit-check.mjs` quotes the file path for POSIX shells. On Windows-only teams, replace `{file}` quoting or run the hook through Git Bash.

@@ -1,0 +1,17 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/spaze/phpstan-disallowed-calls/extension.neon
+
+parameters:
+    level: {{PHPSTAN_LEVEL}}
+    reportUnmatchedIgnoredErrors: true
+    checkExplicitMixed: true
+    disallowedFunctionCalls:
+        -
+            function: ['var_dump()', 'print_r()', 'dd()', 'dump()', 'ray()']
+            message: 'Use the logger.'
+        -
+            function: ['time()', 'date()']
+            message: 'Use the injected clock so the code stays testable.'
+            allowIn:
+                - tests/*

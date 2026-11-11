@@ -1,0 +1,23 @@
+name: Coverage on new code
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  diff-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tests with coverage (lcov or cobertura XML)
+        run: "{{TEST_WITH_COVERAGE_COMMAND}}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install diff-cover
+      - name: Coverage of changed lines
+        run: diff-cover "{{COVERAGE_REPORT_PATH}}" --compare-branch="origin/${{ github.base_ref }}" --fail-under={{COVERAGE_THRESHOLD}}

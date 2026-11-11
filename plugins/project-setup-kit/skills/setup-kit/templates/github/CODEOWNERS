@@ -1,0 +1,15 @@
+/AGENTS.md {{OWNERS}}
+**/AGENTS.md {{OWNERS}}
+/CLAUDE.md {{OWNERS}}
+/.claude/ {{OWNERS}}
+/.cursor/ {{OWNERS}}
+/.mcp.json {{OWNERS}}
+/.ai-kit/ {{OWNERS}}
+/.ai-kit.json {{OWNERS}}
+/.github/copilot-instructions.md {{OWNERS}}
+/.github/agents/ {{OWNERS}}
+/.github/prompts/ {{OWNERS}}
+/.github/instructions/ {{OWNERS}}
+/.github/hooks/ {{OWNERS}}
+/.github/workflows/ {{OWNERS}}
+/.github/CODEOWNERS {{OWNERS}}

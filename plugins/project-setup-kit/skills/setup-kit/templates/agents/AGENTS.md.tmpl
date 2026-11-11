@@ -1,0 +1,62 @@
+# {{PROJECT_NAME}}
+
+{{ONE_PARAGRAPH_WHAT_THE_PROJECT_IS}}
+
+<!-- ai-kit:begin stack -->
+## Stack
+
+{{PARTS_TABLE: part path · language · framework · package manager}}
+<!-- ai-kit:end stack -->
+
+<!-- ai-kit:begin commands -->
+## Commands
+
+| Task | Command |
+|---|---|
+| Install | `{{INSTALL_COMMAND}}` |
+| Run locally | `{{DEV_COMMAND}}` |
+| Test (all) | `{{TEST_COMMAND}}` |
+| Test (one file) | `{{RELATED_TEST_COMMAND}}` |
+| Lint | `{{LINT_COMMAND}}` |
+| Type-check | `{{TYPECHECK_COMMAND}}` |
+| Build | `{{BUILD_COMMAND}}` |
+<!-- ai-kit:end commands -->
+
+<!-- ai-kit:begin layout -->
+## Layout
+
+{{SHORT_TREE_OF_MAIN_FOLDERS_WITH_ONE_LINE_EACH}}
+
+Reference implementations to copy: {{CANONICAL_EXAMPLE_PATHS}}
+<!-- ai-kit:end layout -->
+
+<!-- ai-kit:begin rules -->
+## Working rules
+
+{{RULES_FROM_QUESTIONNAIRE_GROUPED_BY_CATEGORY}}
+<!-- ai-kit:end rules -->
+
+<!-- ai-kit:begin checks -->
+## Checks
+
+These rules are enforced automatically. Do not work around a check, fix the cause. Guards that ask for approval are there on purpose; never try to disable or edit them.
+
+{{LIST_OF_INSTALLED_CHECKS: what · where it runs (hook / pre-commit / CI)}}
+{{PENDING_CHECKS: one line per check that is staged but not active yet, as `- (pending: <how to activate>) <what>`; omit when none}}
+<!-- ai-kit:end checks -->
+
+<!-- ai-kit:begin agent-files -->
+## Agent files
+
+{{ROSTER: roles, commands and skills installed, one line each}}
+<!-- ai-kit:end agent-files -->
+
+<!-- ai-kit:begin memory -->
+## Project memory
+
+{{IF_ITEM_6: Read docs/ai-memory/ before large changes. Propose new entries; never write one without approval.}}
+<!-- ai-kit:end memory -->
+
+## Team notes
+
+Anything below this line is written by the team and never changed by the kit.

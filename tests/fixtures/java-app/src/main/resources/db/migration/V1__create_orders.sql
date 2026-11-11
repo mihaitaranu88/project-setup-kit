@@ -1,0 +1,4 @@
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL
+);

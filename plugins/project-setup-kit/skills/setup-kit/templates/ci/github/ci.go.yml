@@ -1,0 +1,22 @@
+go:
+  name: "{{PART_NAME}} (go)"
+  runs-on: ubuntu-latest
+  defaults:
+    run:
+      working-directory: "{{PART_PATH}}"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: "{{PART_PATH}}/go.mod"
+    - uses: golangci/golangci-lint-action@v8
+      with:
+        working-directory: "{{PART_PATH}}"
+    - run: go vet ./...
+    - run: go test -race ./...
+    - run: go build ./...
+    - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+    - name: Dead code (warning)
+      if: "{{ITEM_24}}"
+      continue-on-error: true
+      run: go run golang.org/x/tools/cmd/deadcode@latest ./...

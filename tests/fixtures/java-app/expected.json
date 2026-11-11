@@ -1,0 +1,21 @@
+{
+  "parts": [{ "path": ".", "language": "java", "framework": "spring-boot", "packageManager": "maven" }],
+  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [],
+  "notApplicable": [17, 19, 26, 46],
+  "migrationsConfig": {
+    "dirs": ["src/main/resources/db/migration"],
+    "timestampPattern": "^V(\\d+(?:[._]\\d+)*)__",
+    "downRequired": false,
+    "ignorePattern": "^(R|U)[0-9]*__"
+  },
+  "expectations": [
+    "Item 21 uses ci.java.yml with the Maven steps only and proposes adding the Maven wrapper (mvnw) because it is missing.",
+    "Item 14 proposes Error Prone + NullAway (or compiler -Werror) since Java has no 'strict' switch.",
+    "Item 15 maps to Checkstyle/PMD rules (System.out, LocalDateTime.now(), @SuppressWarnings) and ArchUnit for layering.",
+    "Item 16 ratchet runs Checkstyle/PMD on changed files, not a full mvn verify.",
+    "Item 20 proposes @ConfigurationProperties + @Validated.",
+    "Item 44 lists @GetMapping endpoints and their Spring Security rules."
+  ]
+}

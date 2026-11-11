@@ -1,0 +1,30 @@
+name: Lint ratchet
+
+on:
+  pull_request:
+
+concurrency:
+  group: lint-ratchet-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ratchet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        if: "{{USES_PNPM}}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+      - run: "{{INSTALL_COMMAND}}"
+      - name: Strict rules on changed lines
+        run: node .ai-kit/scripts/lint-ratchet.mjs --base "origin/${{ github.base_ref }}"
+      - name: Warning budget may only go down
+        run: node .ai-kit/scripts/warning-budget.mjs --against-base --base "origin/${{ github.base_ref }}"

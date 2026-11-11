@@ -1,0 +1,18 @@
+python:
+  name: "{{PART_NAME}} (python)"
+  runs-on: ubuntu-latest
+  defaults:
+    run:
+      working-directory: "{{PART_PATH}}"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: astral-sh/setup-uv@v6
+    - run: uv sync --frozen
+    - run: uv run ruff check .
+    - run: uv run ruff format --check .
+    - run: "uv run {{TYPECHECK_COMMAND}}"
+    - run: uv run pytest
+    - name: Dead code (warning)
+      if: "{{ITEM_24}}"
+      continue-on-error: true
+      run: uvx vulture . --min-confidence 80

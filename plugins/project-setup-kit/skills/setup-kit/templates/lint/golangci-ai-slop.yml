@@ -1,0 +1,25 @@
+version: "2"
+linters:
+  enable:
+    - nolintlint
+    - forbidigo
+    - gosec
+    - errorlint
+    - bodyclose
+    - exhaustive
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    forbidigo:
+      forbid:
+        - pattern: ^fmt\.Print.*$
+          msg: Use the structured logger.
+        - pattern: ^time\.Now$
+          msg: Use the injected clock so the code stays testable.
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [forbidigo]
+      - path: "{{CLOCK_PACKAGE_PATH}}"
+        linters: [forbidigo]

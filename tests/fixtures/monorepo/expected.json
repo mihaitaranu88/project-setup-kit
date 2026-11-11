@@ -1,0 +1,16 @@
+{
+  "parts": [
+    { "path": "web", "language": "typescript", "framework": "vue", "packageManager": "npm" },
+    { "path": "api", "language": "php", "framework": "laravel", "packageManager": "composer" }
+  ],
+  "has": { "frontend": true, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [],
+  "notApplicable": [],
+  "expectations": [
+    "Item 13, 15, 21 are configured per part (ESLint + Prettier for web, Pint/PHPStan for api), with one CI job per part.",
+    "Item 17 uses eslint-plugin-vuejs-accessibility, not jsx-a11y.",
+    "Item 45 recommends OpenAPI because FE and BE use different languages.",
+    "Item 46 preview runs only when every changed file is under web/."
+  ]
+}

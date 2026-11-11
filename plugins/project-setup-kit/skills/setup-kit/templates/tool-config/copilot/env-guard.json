@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "node \".ai-kit/hooks/env-guard.mjs\"",
+        "powershell": "node \".ai-kit/hooks/env-guard.mjs\"",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

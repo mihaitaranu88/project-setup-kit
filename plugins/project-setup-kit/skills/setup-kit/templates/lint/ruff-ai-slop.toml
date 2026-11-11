@@ -1,0 +1,18 @@
+[lint]
+extend-select = [
+  "ANN401",
+  "PGH003",
+  "PGH004",
+  "T20",
+  "DTZ",
+  "S608",
+  "S307",
+  "BLE001",
+  "B904",
+  "ERA001",
+  "RUF006",
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["T20", "S608"]
+"**/test_*.py" = ["T20", "S608"]

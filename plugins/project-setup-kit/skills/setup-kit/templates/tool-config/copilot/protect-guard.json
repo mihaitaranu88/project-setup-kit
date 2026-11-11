@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "node \".ai-kit/hooks/protect-guard.mjs\"",
+        "powershell": "node \".ai-kit/hooks/protect-guard.mjs\"",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

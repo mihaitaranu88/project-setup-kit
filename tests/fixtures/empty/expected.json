@@ -1,0 +1,12 @@
+{
+  "mode": "new-project",
+  "parts": [],
+  "has": { "frontend": false, "api": false, "db": false, "severalServices": false, "versionedReleases": false },
+  "expectations": [
+    "Phase 0b is offered before any item: create the skeleton, continue with the planned stack, or stop.",
+    "No git repository: git init is offered first.",
+    "With option 2 and planned stack Next.js + pnpm: items 1, 3, 5-12, 18, 27, 29, 31, 38-40 are handled; items that need code (13-17, 19-26, 28, 30, 32-37, 41-46) are recorded as pending with note 'no code yet'.",
+    "AGENTS.md has the questionnaire rules and TODO: lines for commands and layout; no invented commands.",
+    "No CI workflow that runs commands which do not exist yet."
+  ]
+}

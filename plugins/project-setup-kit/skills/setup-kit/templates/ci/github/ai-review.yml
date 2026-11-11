@@ -1,0 +1,56 @@
+name: AI review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false && vars.AI_REVIEW_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Debounce rapid pushes
+        if: github.event.action == 'synchronize'
+        run: sleep "${{ vars.AI_REVIEW_DEBOUNCE_SECONDS || 120 }}"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect sensitive paths
+        id: sensitive
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          SENSITIVE_PATHS: "{{SENSITIVE_PATHS_REGEX}}"
+        run: |
+          if git diff --name-only "origin/$BASE_REF...HEAD" | grep -Eq "$SENSITIVE_PATHS"; then
+            echo "touched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "touched=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Read AGENTS.md{{IF_ITEM_6: and docs/ai-memory/}} first; the project rules there are the review criteria.
+            Report only real problems, ranked by severity: Critical (security, data loss, wrong results, breaking API), Important, Suggestion.
+            For each: file:line, why it matters, the concrete fix. Group related findings. No praise, no summary of the diff.
+            Check that README, AGENTS.md and {{ENV_EXAMPLE_FILE}} were updated if the PR adds commands, env variables or rules.
+            ${{ steps.sensitive.outputs.touched == 'true' && 'This PR touches security-sensitive paths. Add a separate "Security" section: authentication and authorization on every changed endpoint, ownership checks on ids from input, injection (SQL, shell, HTML), secrets in code or logs, unsafe file handling.' || '' }}
+            Write the review to review.md, then post it as a single comment that is updated on later runs:
+            gh pr comment ${{ github.event.pull_request.number }} --edit-last --create-if-none --body-file review.md
+          claude_args: >-
+            --max-turns 30
+            --allowedTools "Read,Grep,Glob,Write(review.md),Bash(git diff *),Bash(git log *),Bash(gh pr view *),Bash(gh pr diff *),Bash(gh pr comment *)"

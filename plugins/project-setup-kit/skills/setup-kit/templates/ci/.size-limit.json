@@ -1,0 +1,8 @@
+[
+  {
+    "name": "app entry",
+    "path": "{{BUILD_OUTPUT_GLOB}}",
+    "limit": "{{SIZE_LIMIT}}",
+    "gzip": true
+  }
+]

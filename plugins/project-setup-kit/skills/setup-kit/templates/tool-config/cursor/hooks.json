@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      { "command": "node .ai-kit/hooks/git-guard.mjs" },
+      { "command": "node .ai-kit/hooks/danger-guard.mjs" },
+      { "command": "node .ai-kit/hooks/protect-guard.mjs" },
+      { "command": "node .ai-kit/hooks/env-guard.mjs" }
+    ],
+    "beforeReadFile": [
+      { "command": "node .ai-kit/hooks/env-guard.mjs" }
+    ]
+  }
+}

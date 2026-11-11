@@ -1,0 +1,8 @@
+{
+  "parts": [{ "path": ".", "language": "python", "framework": "fastapi", "packageManager": "uv" }],
+  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [{ "id": 15, "missing": "ruff is configured but none of the anti-slop rules are selected" }],
+  "notApplicable": [17, 26, 46],
+  "migrationsConfig": { "dirs": ["migrations/versions"], "downPattern": "def\\s+downgrade" }
+}

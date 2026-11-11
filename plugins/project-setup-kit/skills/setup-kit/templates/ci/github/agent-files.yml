@@ -1,0 +1,33 @@
+name: Agent files
+
+on:
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "**/AGENTS.md"
+      - "CLAUDE.md"
+      - ".claude/**"
+      - ".github/copilot-instructions.md"
+      - ".github/agents/**"
+      - ".github/prompts/**"
+      - ".github/instructions/**"
+      - ".cursor/**"
+      - ".agents/**"
+      - ".ai-kit/**"
+      - "docs/ai-memory/**"
+
+permissions:
+  contents: read
+
+jobs:
+  agent-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+      - name: Instruction size budget (warning)
+        run: node .ai-kit/scripts/prefix-budget.mjs
+      - name: Agent docs consistency
+        run: node .ai-kit/scripts/agent-docs-consistency.mjs

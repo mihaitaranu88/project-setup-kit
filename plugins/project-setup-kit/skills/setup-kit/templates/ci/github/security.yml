@@ -1,0 +1,50 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: ["{{BASE_BRANCH}}"]
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        env:
+          LOG_OPTS: ${{ github.event_name == 'pull_request' && format('origin/{0}..HEAD', github.base_ref) || '-1' }}
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:{{GITLEAKS_VERSION}} \
+            git /repo --redact --no-banner --log-opts="$LOG_OPTS"
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        if: "{{USES_PNPM}}"
+      - uses: actions/setup-node@v4
+        if: "{{IS_NODE}}"
+        with:
+          node-version: "{{NODE_VERSION}}"
+      - name: Known vulnerabilities (high and critical)
+        run: "{{AUDIT_COMMAND}}"
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+          allow-licenses: "{{ALLOWED_LICENSES}}"

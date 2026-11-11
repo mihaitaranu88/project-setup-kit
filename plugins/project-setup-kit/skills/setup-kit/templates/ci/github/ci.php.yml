@@ -1,0 +1,17 @@
+php:
+  name: "{{PART_NAME}} (php)"
+  runs-on: ubuntu-latest
+  defaults:
+    run:
+      working-directory: "{{PART_PATH}}"
+  steps:
+    - uses: actions/checkout@v4
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: "{{PHP_VERSION}}"
+        coverage: none
+    - run: composer install --no-interaction --prefer-dist --no-progress
+    - run: "{{LINT_COMMAND}}"
+    - run: vendor/bin/phpstan analyse --no-progress
+    - run: "{{TEST_COMMAND}}"
+    - run: composer audit

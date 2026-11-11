@@ -1,0 +1,28 @@
+{
+  "name": "project-setup-kit",
+  "owner": {
+    "name": "mihaitaranu88"
+  },
+  "metadata": {
+    "description": "Interactive setup of AI-agent files, guards, checks and CI for any project, in any language."
+  },
+  "plugins": [
+    {
+      "name": "project-setup-kit",
+      "source": "./plugins/project-setup-kit",
+      "description": "Analyzes a project, asks only what is not configured yet, and adds AGENTS.md, agent guards, lint/CI checks and GitHub settings one item at a time, with explicit consent.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "keywords": [
+        "agents",
+        "AGENTS.md",
+        "hooks",
+        "ci",
+        "lint",
+        "setup",
+        "code-quality"
+      ],
+      "homepage": "https://github.com/mihaitaranu88/project-setup-kit"
+    }
+  ]
+}

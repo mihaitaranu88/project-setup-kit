@@ -1,0 +1,28 @@
+pre-commit:
+  parallel: false
+  piped: true
+  commands:
+    lint:
+      glob: "{{LINT_GLOB}}"
+      run: "{{LINT_FIX_COMMAND}} {staged_files}"
+      stage_fixed: true
+    format:
+      glob: "{{FORMAT_GLOB}}"
+      run: "{{FORMAT_COMMAND}} {staged_files}"
+      stage_fixed: true
+    secrets:
+      run: gitleaks git --pre-commit --staged --redact --no-banner
+    precheck:
+      run: node .ai-kit/scripts/precheck.mjs --staged
+
+commit-msg:
+  commands:
+    message-format:
+      run: node .ai-kit/scripts/commit-msg.mjs {1}
+
+pre-push:
+  commands:
+    branch-name:
+      run: node .ai-kit/scripts/branch-name.mjs
+    lockfile:
+      run: node .ai-kit/scripts/lockfile-check.mjs

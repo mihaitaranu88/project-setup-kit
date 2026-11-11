@@ -1,0 +1,15 @@
+{
+  "name": "project-setup-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Development package for the project-setup-kit Claude Code plugin. Only used to test the kit's own scripts.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/scripts/",
+    "check": "node tests/check-kit.mjs && node --test tests/scripts/"
+  }
+}

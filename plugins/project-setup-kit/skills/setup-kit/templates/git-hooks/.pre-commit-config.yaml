@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "{{RUFF_VERSION}}"
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: "{{GITLEAKS_VERSION}}"
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: commit-message-format
+        name: commit message format
+        entry: node .ai-kit/scripts/commit-msg.mjs
+        language: system
+        stages: [commit-msg]
+      - id: branch-name
+        name: branch name
+        entry: node .ai-kit/scripts/branch-name.mjs
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: lockfile-drift
+        name: lockfile drift warning
+        entry: node .ai-kit/scripts/lockfile-check.mjs
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

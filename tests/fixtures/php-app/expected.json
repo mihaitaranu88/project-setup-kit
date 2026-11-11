@@ -1,0 +1,9 @@
+{
+  "parts": [{ "path": ".", "language": "php", "framework": "laravel", "packageManager": "composer" }],
+  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [{ "id": 13, "missing": "Pint exists but no git hook runs it" }],
+  "notApplicable": [17, 26, 46],
+  "migrationsConfig": { "dirs": ["database/migrations"], "timestampPattern": "^(\\d{4}_\\d{2}_\\d{2}_\\d{6})", "note": "Laravel timestamps contain underscores; the kit must adapt timestampPattern and strip underscores before comparing" },
+  "endpointReport": "php artisan route:list --json, middleware column shows auth:sanctum on /orders and none on /health"
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "{{ENTRY_GLOBS}}"
+  ],
+  "project": [
+    "{{SOURCE_GLOBS}}"
+  ],
+  "ignore": [
+    ".ai-kit/**",
+    "{{GENERATED_GLOBS}}"
+  ],
+  "ignoreDependencies": [
+    "lefthook",
+    "eslint-formatter-unix",
+    "{{ONLY_WHAT_KNIP_WRONGLY_REPORTS}}"
+  ]
+}

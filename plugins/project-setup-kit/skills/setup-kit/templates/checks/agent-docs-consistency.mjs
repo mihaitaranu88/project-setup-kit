@@ -1,0 +1,96 @@
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import { basename, dirname, extname, join, normalize, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { REPO_ROOT, annotate, loadKitConfig } from './lib.mjs';
+
+const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)/g;
+const BACKTICK_PATH = /`((?:\.claude|\.github|\.cursor|\.ai-kit|docs)\/[^`\s*{}<>]+)`/g;
+
+function listEntries(root, dir) {
+  const absolute = join(root, dir);
+  if (!existsSync(absolute)) return [];
+  return readdirSync(absolute)
+    .filter(name => !name.startsWith('.') && name.toLowerCase() !== 'readme.md')
+    .map(name => {
+      const path = join(dir, name);
+      const isDirectory = statSync(join(root, path)).isDirectory();
+      return {
+        path,
+        name: isDirectory ? name : basename(name, extname(name)).replace(/\.(agent|prompt)$/, ''),
+        markdownFiles: isDirectory ? [join(path, 'SKILL.md')].filter(file => existsSync(join(root, file))) : [path],
+      };
+    })
+    .filter(entry => entry.markdownFiles.length > 0 && entry.markdownFiles.every(file => file.endsWith('.md')));
+}
+
+export function toPendingPath(path) {
+  const segments = path.split('/').map(segment => (segment.startsWith('.') && segment !== '.' && segment !== '..' ? `dot-${segment.slice(1)}` : segment));
+  const last = segments.pop();
+  return ['.ai-kit', 'pending', ...segments, `${last}.pending`].join('/');
+}
+
+function existsOrPending(root, target) {
+  if (existsSync(join(root, target))) return true;
+  const pending = join(root, toPendingPath(target));
+  const pendingDir = pending.replace(/\.pending$/, '');
+  return existsSync(pending) || existsSync(pendingDir);
+}
+
+export function findBrokenReferences(root, file) {
+  const content = readFileSync(join(root, file), 'utf8');
+  const fromFile = [...content.matchAll(MARKDOWN_LINK)]
+    .map(match => match[1])
+    .filter(target => !/^[a-z]+:/i.test(target))
+    .map(target => normalize(join(dirname(file), decodeURIComponent(target))));
+  const fromRoot = [...content.matchAll(BACKTICK_PATH)].map(match => normalize(match[1].replace(/[.,:;)]$/, '')));
+  return [...new Set([...fromFile, ...fromRoot])]
+    .filter(target => !relative(root, join(root, target)).startsWith('..'))
+    .filter(target => !existsOrPending(root, target));
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function isMentioned(text, entry) {
+  const name = escapeRegex(entry.name);
+  const asCode = new RegExp(`\`/?${name}\``);
+  const asCommand = new RegExp(`(^|[\\s(])/${name}(?![\\w-])`);
+  const asPath = new RegExp(`${escapeRegex(entry.path)}|/${name}(?:\\.(?:agent|prompt))?\\.md|/${name}/SKILL\\.md`);
+  return asCode.test(text) || asCommand.test(text) || asPath.test(text);
+}
+
+export function evaluateAgentDocs(root, settings) {
+  const problems = [];
+  const rosterText = (settings.roster ?? [])
+    .filter(file => existsSync(join(root, file)))
+    .map(file => readFileSync(join(root, file), 'utf8'))
+    .join('\n');
+  const entries = (settings.dirs ?? []).flatMap(dir => listEntries(root, dir));
+  for (const entry of entries) {
+    if (!isMentioned(rosterText, entry)) {
+      problems.push(`${entry.path} exists but is not mentioned in ${settings.roster.join(', ')}`);
+    }
+  }
+  const filesToCheck = [
+    ...(settings.linkCheckFiles ?? []).filter(file => existsSync(join(root, file))),
+    ...entries.flatMap(entry => entry.markdownFiles),
+  ];
+  for (const file of [...new Set(filesToCheck)]) {
+    for (const target of findBrokenReferences(root, file)) problems.push(`${file} points to ${target}, which does not exist`);
+  }
+  return problems;
+}
+
+function main() {
+  const settings = loadKitConfig().agentDocs ?? { roster: ['AGENTS.md'], dirs: [], linkCheckFiles: ['AGENTS.md'] };
+  const problems = evaluateAgentDocs(REPO_ROOT, settings);
+  if (problems.length === 0) {
+    process.stdout.write('Agent docs are consistent.\n');
+    return;
+  }
+  for (const problem of problems) annotate('error', problem);
+  process.exitCode = 1;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) main();

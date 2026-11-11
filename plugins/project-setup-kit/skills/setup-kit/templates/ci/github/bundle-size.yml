@@ -1,0 +1,31 @@
+name: Bundle size
+
+on:
+  pull_request:
+    paths:
+      - "{{FRONTEND_PATH}}/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        if: "{{USES_PNPM}}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+      - uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: "{{FRONTEND_PATH}}"
+          build_script: "{{BUILD_SCRIPT_NAME}}"
+          package_manager: "{{PACKAGE_MANAGER}}"
+        env:
+          "{{BUILD_ENV_PLACEHOLDERS}}": "{{FAKE_VALUE}}"

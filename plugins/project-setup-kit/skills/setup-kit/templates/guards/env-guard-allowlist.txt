@@ -1,0 +1,6 @@
+# Env file names the agent may read. One name per line, matched against the ".env..." token only.
+# List only files that are committed and contain placeholders, never real secrets.
+.env.example
+.env.sample
+.env.template
+.env.dist

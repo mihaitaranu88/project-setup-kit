@@ -1,0 +1,216 @@
+{
+  "baseBranch": "main",
+  "gitGuard": {
+    "deny": [
+      "commit",
+      "push",
+      "merge",
+      "rebase",
+      "reset"
+    ],
+    "denyGhMutations": true,
+    "allowExact": []
+  },
+  "dangerGuard": {
+    "mode": "ask",
+    "packs": [
+      "filesystem",
+      "git",
+      "hookBypass",
+      "database",
+      "infrastructure",
+      "remoteScripts"
+    ],
+    "allowPatterns": [],
+    "extraPatterns": []
+  },
+  "protectFiles": {
+    "mode": "ask",
+    "paths": [
+      ".ai-kit/**",
+      ".ai-kit.json",
+      ".claude/settings.json",
+      ".claude/settings.local.json",
+      ".github/hooks/**",
+      ".github/workflows/**",
+      ".github/CODEOWNERS",
+      ".cursor/hooks.json",
+      ".git/hooks/**",
+      ".git/config",
+      ".husky/**",
+      "lefthook.yml",
+      ".pre-commit-config.yaml",
+      "**/package-lock.json",
+      "**/pnpm-lock.yaml",
+      "**/yarn.lock",
+      "**/composer.lock",
+      "**/poetry.lock",
+      "**/uv.lock",
+      "**/go.sum",
+      "**/Cargo.lock"
+    ],
+    "except": [
+      ".ai-kit/pending/**"
+    ],
+    "askCommands": [
+      "\\bkit\\.mjs\\s+pending\\s+apply\\b"
+    ]
+  },
+  "postEdit": {
+    "timeoutSeconds": 60,
+    "rules": [
+      {
+        "match": "\\.(ts|tsx|js|jsx|mjs)$",
+        "commands": [
+          "{{EXEC}} eslint --no-warn-ignored {file}"
+        ]
+      }
+    ],
+    "note": "{{EXEC}} is the package runner the project uses: 'pnpm exec', 'npx', 'yarn', 'bunx'. --no-warn-ignored keeps ignored files (generated code, .ai-kit) from failing the hook."
+  },
+  "stopCheck": {
+    "timeoutSeconds": 300,
+    "runPostEditRules": true,
+    "commands": [
+      "node .ai-kit/scripts/precheck.mjs --working"
+    ]
+  },
+  "precheck": {
+    "lineChecks": {
+      "comments": {
+        "enabled": false
+      },
+      "fillerNames": {
+        "enabled": false
+      }
+    },
+    "diffChecks": {}
+  },
+  "prefixBudget": {
+    "maxEstimatedTokens": 6000,
+    "bytesPerToken": 4,
+    "files": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      ".github/copilot-instructions.md"
+    ]
+  },
+  "agentDocs": {
+    "roster": [
+      "AGENTS.md"
+    ],
+    "dirs": [
+      ".claude/agents",
+      ".claude/commands",
+      ".claude/skills",
+      ".github/agents",
+      ".github/prompts",
+      ".cursor/commands",
+      ".agents/skills"
+    ],
+    "linkCheckFiles": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      ".github/copilot-instructions.md"
+    ]
+  },
+  "ratchet": {
+    "checks": [
+      {
+        "name": "rules held at warn because of old code",
+        "files": "\\.(ts|tsx|js|jsx)$",
+        "command": "npx eslint --format unix --rule '{\"complexity\":[\"error\",10],\"max-depth\":[\"error\",4]}' {files}"
+      }
+    ],
+    "note": "List here the rules the project keeps at 'warn' because of existing debt; the ratchet raises them to error on changed lines only. Rules reported on a function's first line (max-lines-per-function, complexity) only catch new functions or edits to the signature line. ESLint 9+ needs the eslint-formatter-unix dev dependency for --format unix."
+  },
+  "warningBudget": {
+    "file": ".ai-kit/warning-budget",
+    "command": "npx eslint --format unix ."
+  },
+  "branch": {
+    "pattern": "^(feat|fix|chore|docs|refactor|test)/[A-Z]+-[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$",
+    "exempt": [
+      "^(main|master|develop|dev)$",
+      "^release/.+$",
+      "^dependabot/.+$",
+      "^renovate/.+$"
+    ],
+    "examples": [
+      "feat/PROJ-123-add-export",
+      "fix/PROJ-456-null-total",
+      "chore/PROJ-0-update-tooling"
+    ]
+  },
+  "commit": {
+    "pattern": "^(feat|fix|chore|docs|refactor|test|perf|build|ci|revert)(\\([A-Z]+-[0-9]+\\))?!?: .{3,}",
+    "rejectTrailers": [],
+    "examples": [
+      "feat(PROJ-123): add CSV export",
+      "fix: handle empty totals"
+    ]
+  },
+  "lockfiles": [
+    {
+      "lock": "package-lock.json",
+      "installed": "node_modules/.package-lock.json",
+      "fix": "npm ci"
+    },
+    {
+      "lock": "pnpm-lock.yaml",
+      "installed": "node_modules/.pnpm/lock.yaml",
+      "fix": "pnpm install --frozen-lockfile",
+      "sameContent": true
+    },
+    {
+      "lock": "yarn.lock",
+      "installed": "node_modules/.yarn-state.yml",
+      "fix": "yarn install --immutable"
+    },
+    {
+      "lock": "composer.lock",
+      "installed": "vendor/composer/installed.json",
+      "fix": "composer install"
+    }
+  ],
+  "dbGuard": {
+    "envFiles": [
+      ".env"
+    ],
+    "hostVariables": [
+      "DB_HOST",
+      "DATABASE_HOST",
+      "DB_SERVER",
+      "POSTGRES_HOST",
+      "MYSQL_HOST",
+      "DATABASE_URL",
+      "DB_URL"
+    ],
+    "localHosts": [
+      "localhost",
+      "127.0.0.1",
+      "::1",
+      "0.0.0.0",
+      "host.docker.internal",
+      "db",
+      "postgres",
+      "mysql",
+      "mariadb",
+      "sqlserver",
+      "mongo"
+    ],
+    "overrideVariable": "ALLOW_REMOTE_DB"
+  },
+  "migrations": {
+    "dirs": [
+      "migrations"
+    ],
+    "filePattern": "\\.(ts|js|php|py|sql|go|rb)$",
+    "downPattern": "\\bdown\\s*\\(|def\\s+downgrade|function\\s+down|\\+migrate\\s+Down|def\\s+down\\b|Down\\(",
+    "timestampPattern": "^(\\d{8,17})",
+    "downRequired": true,
+    "orderCheck": true,
+    "ignorePattern": null,
+    "orderFile": null
+  }
+}

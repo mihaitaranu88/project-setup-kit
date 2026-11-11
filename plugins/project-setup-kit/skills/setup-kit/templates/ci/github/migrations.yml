@@ -1,0 +1,22 @@
+name: Migrations
+
+on:
+  pull_request:
+    paths:
+      - "{{MIGRATIONS_GLOB}}"
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+      - name: New migrations are reversible and ordered
+        run: node .ai-kit/scripts/migration-check.mjs --base "origin/${{ github.base_ref }}"

@@ -1,0 +1,68 @@
+name: PR conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-conventions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  branch:
+    if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+      - env:
+          BRANCH: ${{ github.head_ref }}
+        run: node .ai-kit/scripts/branch-name.mjs --branch "$BRANCH"
+
+  title:
+    if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          TITLE_PATTERN: "{{PR_TITLE_PATTERN}}"
+          TITLE_EXAMPLES: "{{PR_TITLE_EXAMPLES}}"
+        with:
+          script: |
+            const title = context.payload.pull_request.title.trim();
+            const branchLike = /^[a-z]+\/[A-Za-z0-9._-]+$/;
+            const errors = [];
+            if (branchLike.test(title)) errors.push('The PR title is a branch name. Write a readable title instead.');
+            if (!new RegExp(process.env.TITLE_PATTERN).test(title)) {
+              errors.push(`Title "${title}" does not match ${process.env.TITLE_PATTERN}. Examples: ${process.env.TITLE_EXAMPLES}`);
+            }
+            if (errors.length) core.setFailed(errors.join('\n'));
+
+  body:
+    if: "!endsWith(github.event.pull_request.user.login, '[bot]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          TASK_KEY_PATTERN: "{{TASK_KEY_PATTERN}}"
+          REQUIRED_SECTIONS: "{{REQUIRED_SECTIONS}}"
+        with:
+          script: |
+            const body = (context.payload.pull_request.body || '').replace(/<!--[\s\S]*?-->/g, '');
+            const errors = [];
+            const taskKey = process.env.TASK_KEY_PATTERN;
+            if (taskKey && !new RegExp(taskKey, 'i').test(body) && !/\bno ticket\b/i.test(body)) {
+              errors.push('No task reference found. Add the task key, or write "no ticket" with a reason.');
+            }
+            for (const section of process.env.REQUIRED_SECTIONS.split('|').filter(Boolean)) {
+              const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const match = body.match(new RegExp(`##\\s*${escaped}\\s*\\r?\\n([\\s\\S]*?)(?=\\n##\\s|$)`, 'i'));
+              if (!match || match[1].trim().length < 10) errors.push(`Section "${section}" is missing or empty.`);
+            }
+            if (errors.length) core.setFailed(errors.join('\n'));

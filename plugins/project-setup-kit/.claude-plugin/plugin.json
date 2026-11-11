@@ -1,0 +1,20 @@
+{
+  "name": "project-setup-kit",
+  "version": "0.1.0",
+  "description": "Interactive setup of AI-agent files, guards, checks and CI for any project, in any language.",
+  "author": {
+    "name": "mihaitaranu88"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "AGENTS.md",
+    "hooks",
+    "ci",
+    "lint",
+    "setup",
+    "code-quality"
+  ],
+  "homepage": "https://github.com/mihaitaranu88/project-setup-kit",
+  "repository": "https://github.com/mihaitaranu88/project-setup-kit"
+}

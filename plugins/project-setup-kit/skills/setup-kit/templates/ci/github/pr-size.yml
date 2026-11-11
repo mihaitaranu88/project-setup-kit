@@ -1,0 +1,38 @@
+name: PR size
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          MAX_LINES: "{{MAX_CHANGED_LINES}}"
+          IGNORED: "(^|/)(package-lock\\.json|pnpm-lock\\.yaml|yarn\\.lock|composer\\.lock|poetry\\.lock|uv\\.lock|go\\.sum|Cargo\\.lock)$|__snapshots__/|\\.snap$|(^|/)(dist|build|generated)/|{{EXTRA_IGNORED_REGEX}}"
+        with:
+          script: |
+            const ignored = new RegExp(process.env.IGNORED);
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            const counted = files.filter(file => !ignored.test(file.filename));
+            const changed = counted.reduce((sum, file) => sum + file.additions + file.deletions, 0);
+            const max = Number(process.env.MAX_LINES);
+            const label = 'large-pr';
+            const issue = { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.payload.pull_request.number };
+            if (changed > max) {
+              core.warning(`This PR changes ${changed} lines (limit ${max}, lockfiles and generated files excluded). Consider splitting it.`);
+              await github.rest.issues.addLabels({ ...issue, labels: [label] });
+            } else {
+              await github.rest.issues.removeLabel({ ...issue, name: label }).catch(() => {});
+            }
