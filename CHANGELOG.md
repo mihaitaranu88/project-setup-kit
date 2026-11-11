@@ -7,6 +7,9 @@
 - Windows: file paths in hook and ratchet commands are quoted for the platform; the worktree helper is now a Node script (`worktree.mjs new|remove`); danger-guard also recognizes broad `Remove-Item -Recurse`, `rd /s` and `rmdir /s` deletes.
 - Skill evaluation: `npm run eval` and a manual/tag-triggered GitHub workflow run the skill's analysis on every fixture with Claude Code and compare it with `expected.json`.
 - Plugin icon.
+- CI runs on Linux, Windows and macOS with Node 20 and 22; it found and fixed two Windows bugs (file quoting in the lint ratchet, backslashes in the Copilot/Cursor prompt).
+- Skill evaluation baseline: all 7 fixture projects (TypeScript, Python, PHP, Go, Java, a monorepo and an empty folder) match their expected analysis.
+- Contributing guide, CI badge, repository topics.
 
 ## 0.1.0 — first public release
 
