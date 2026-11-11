@@ -133,4 +133,5 @@ Decisions that need an external check are made here, not earlier: whether depend
 3. Run every installed local check once (lint, hooks dry-run, kit scripts) and show the result. Fix only what the kit introduced; report anything else.
 4. Items whose files are still pending cannot be dry-run: list them under "verify after `kit.mjs pending apply`" instead of reporting them as failures.
 5. Prove the guards work, with the user watching: run `node <skill-dir>/scripts/kit.mjs guard-test`. It sends sample tool calls (git push, `rm -rf ~/`, `--no-verify`, editing `.claude/settings.json`, reading `.env`) to every installed guard and prints each answer; it never runs the dangerous command itself. Do not pipe hand-written JSON into the hooks — the shell tools may refuse it.
-6. Print the summary described in SKILL.md, "Finishing".
+6. Check pinned versions: `node <skill-dir>/scripts/kit.mjs outdated` (needs network; skip it offline and say so). The kit's templates carry the versions that were current at its release, so a newer one may exist already. Offer each MAJOR change only after reading its release notes, and minor ones as a single batch; after changing an action, run `pin-actions` again if item 48 is installed.
+7. Print the summary described in SKILL.md, "Finishing".

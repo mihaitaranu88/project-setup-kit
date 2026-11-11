@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { checkOutdated, formatOutdated } from './outdated.mjs';
 
 export const SKILL_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const TEMPLATES_DIR = join(SKILL_DIR, 'templates');
@@ -34,6 +35,7 @@ const USAGE = `Usage (run from the project root):
   node kit.mjs plugin-rules <plugin> [--via <package>] [--config recommended]   print a lint plugin's preset rules (resolving it through a framework package)
   node kit.mjs verify                                           list recorded files that changed or disappeared
   node kit.mjs templates [prefix]                               list template paths
+  node kit.mjs outdated [--json]                                 list pinned actions, tool images and MCP packages that have a newer release
   node kit.mjs pin-actions <workflow>... [--check]               pin every GitHub action to a full commit SHA (the tag stays as a note); --check only lists unpinned ones`;
 
 export function hashContent(content) {
@@ -369,6 +371,10 @@ function runCommand(argv, cwd, root) {
     const [plugin] = positional(args);
     if (!plugin) throw new Error(USAGE);
     return JSON.stringify(readPluginRules(root, plugin, readOption(args, 'via'), readOption(args, 'config') ?? 'recommended'), null, 2);
+  }
+  if (command === 'outdated') {
+    const results = checkOutdated(root);
+    return args.includes('--json') ? JSON.stringify(results, null, 2) : formatOutdated(results);
   }
   if (command === 'pin-actions') {
     const files = positional(args).map(path => resolve(cwd, path));

@@ -10,6 +10,9 @@ Node.js 20 or newer. No dependencies to install.
 npm run check   # consistency check + script tests (runs on Linux, Windows and macOS in CI)
 npm run eval         # claude plugin eval: every case 3 times with and without the plugin (uses tokens, ~$15)
 npm run eval:quick   # one run per case, plugin only (~$3)
+npm run eval:guards  # 7 guard scenarios in a real Claude Code session (~$1.20)
+npm run lint-workflows  # actionlint + zizmor on the rendered workflow templates (needs Docker)
+npm run freshness    # are the actions, images and MCP packages pinned in the templates still the latest?
 npm run build-evals  # regenerate plugins/project-setup-kit/evals/ after editing tests/fixtures/*/expected.json
 ```
 

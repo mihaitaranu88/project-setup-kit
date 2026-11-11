@@ -89,7 +89,36 @@ const STATE = JSON.stringify({
   settings: { done: ['required-check:ci'], pending: ['secret:SONAR_TOKEN'] },
 }, null, 2);
 
+const HASH_FILES = `node -e 'const fs=require("fs"),c=require("crypto");const s=JSON.parse(fs.readFileSync(".ai-kit.json","utf8"));for(const f of Object.keys(s.files)){if(s.files[f].hash!=="merged")s.files[f].hash="sha256:"+c.createHash("sha256").update(fs.readFileSync(f)).digest("hex");}fs.writeFileSync(".ai-kit.json",JSON.stringify(s,null,2)+"\\n")'\n`;
+
 const INSTALLED = `cat > .ai-kit.json <<'JSON'\n${STATE}\nJSON\nmkdir -p .github/workflows\nprintf 'name: CI\\non: pull_request\\njobs:\\n  test:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - uses: actions/checkout@v4\\n' > .github/workflows/ci.yml\nprintf '# Rules\\n' > AGENTS.md\nprintf '@AGENTS.md\\n' > CLAUDE.md\nnode -e 'const fs=require("fs"),c=require("crypto");const s=JSON.parse(fs.readFileSync(".ai-kit.json","utf8"));for(const f of Object.keys(s.files)){if(s.files[f].hash!=="merged")s.files[f].hash="sha256:"+c.createHash("sha256").update(fs.readFileSync(f)).digest("hex");}fs.writeFileSync(".ai-kit.json",JSON.stringify(s,null,2)+"\\n")'\ngit add -A\ngit -c user.email=eval@example.invalid -c user.name=kit-eval commit -q -m kit\n`;
+
+const OLD_STATES = {
+  installed: [1, 2, 3, 5, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 21, 25, 27, 28, 29, 38, 39, 40],
+  declined: [4, 6, 7, 12, 17, 22, 23, 24, 26, 30, 31, 32, 33, 34, 35, 36, 37, 41, 46],
+  'not-applicable': [20, 42, 43, 44, 45],
+};
+
+function oldState(version) {
+  const items = {};
+  for (const [state, ids] of Object.entries(OLD_STATES)) for (const id of ids) items[id] = { state };
+  items[1].files = ['AGENTS.md', 'CLAUDE.md'];
+  items[21].files = ['.github/workflows/ci.yml'];
+  return JSON.stringify({
+    kitVersion: version,
+    updatedAt: '2026-11-01',
+    context: { aiTools: ['claude'], platform: 'github', projectAge: 'existing', team: true, parts: [{ path: '.', language: 'typescript', packageManager: 'npm', frontend: true }] },
+    items,
+    files: { 'AGENTS.md': { hash: 'merged', items: ['1'] }, 'CLAUDE.md': { hash: 'sha256:0', items: ['1'] }, '.github/workflows/ci.yml': { hash: 'sha256:0', items: ['21'] } },
+    settings: { done: ['required-check:ci'], pending: [] },
+  }, null, 2);
+}
+
+const OLD_CI = 'name: CI\\non:\\n  pull_request:\\npermissions:\\n  contents: read\\njobs:\\n  web:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - uses: actions/checkout@v4\\n      - uses: actions/setup-node@v4\\n        with:\\n          node-version: 22\\n          cache: npm\\n      - run: npm ci\\n      - run: npm test\\n';
+
+function installedAt(version) {
+  return `cat > .ai-kit.json <<'JSON'\n${oldState(version)}\nJSON\nmkdir -p .github/workflows\nprintf '${OLD_CI}' > .github/workflows/ci.yml\nprintf '# Rules\\n\\n<!-- ai-kit:begin rules -->\\n## Working rules\\n\\n- Never use any.\\n<!-- ai-kit:end rules -->\\n' > AGENTS.md\nprintf '@AGENTS.md\\n' > CLAUDE.md\n${HASH_FILES}git add -A\ngit -c user.email=eval@example.invalid -c user.name=kit-eval commit -q -m kit\n`;
+}
 
 function behaviorCases() {
   const llm = criteria => `${frontmatter({ type: 'llm' })}\n${criteria}\n`;
@@ -124,6 +153,17 @@ function behaviorCases() {
         'graders/nothing-written.md': NOTHING_WRITTEN,
         'graders/state-kept.md': `${frontmatter({ type: 'regex', pattern: quoteYaml('"declined"'), target: '{source: file, path: .ai-kit.json}' })}`,
         'graders/lists-states.md': llm('Check only these facts in the final message: item 1 (AGENTS.md) is installed; item 21 (base CI) is installed; item 6 (team memory) is declined; item 46 is not applicable; the SONAR_TOKEN secret is pending.\nPASS if all five are reported correctly and the message does not claim it changed any file. Extra observations, tables, advice or a note that a tool was unavailable do not matter.\nFAIL if one of the five facts is missing or wrong, or if it says it changed a file.'),
+      },
+    },
+    {
+      name: 'update-from-0.3.0',
+      files: {
+        'case.yaml': caseYaml('update-from-0.3.0', ['behavior', 'update']),
+        'scaffold.sh': scaffold('ts-app', installedAt('0.3.0')),
+        'prompt.md': `${frontmatter({ max_turns: 40, timeout_seconds: 900, allowed_tools: ALLOWED_TOOLS })}\n/setup-kit update\n`,
+        'graders/nothing-written.md': NOTHING_WRITTEN,
+        'graders/workflow-untouched.md': `${frontmatter({ type: 'regex', pattern: quoteYaml('actions/checkout@v4'), target: '{source: file, path: .github/workflows/ci.yml}' })}`,
+        'graders/offers-the-upgrade.md': llm('The project was set up with kit 0.3.0 and every one of items 1–46 already has an answer in .ai-kit.json.\nPASS if the final message (1) treats this as an update from 0.3.0, (2) names at least two of the items added in 0.4.0 (new-dependency check, GitHub Actions hardening, cloud agent environment, one verify command, container scanning), (3) mentions an update for the existing CI workflow (newer action versions or its security fixes such as persist-credentials), and (4) asks the user before changing anything.\nFAIL if it starts the questionnaire again, asks about items that already have an answer as if they were new, or says it already changed files.'),
       },
     },
     {

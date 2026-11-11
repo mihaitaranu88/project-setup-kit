@@ -13,7 +13,10 @@
     "check": "node tests/check-kit.mjs && node tests/build-evals.mjs --check && node tests/run-tests.mjs",
     "build-evals": "node tests/build-evals.mjs",
     "eval": "claude plugin eval plugins/project-setup-kit --scaffold --trust-plugin --no-publish --threshold 0.9 --allow-tools \"Bash(git:*)\" \"Bash(ls:*)\" \"Bash(cat:*)\" \"Bash(node:*)\" \"Bash(rm:*)\" Write Edit",
-    "eval:quick": "npm run eval -- --runs 1 --ablation none -j 6"
+    "eval:quick": "npm run eval -- --runs 1 --ablation none -j 6",
+    "eval:guards": "node tests/live-guards.mjs",
+    "lint-workflows": "node tests/lint-workflows.mjs",
+    "freshness": "node tests/template-freshness.mjs"
   },
   "bin": {
     "project-setup-kit": "bin/cli.mjs"

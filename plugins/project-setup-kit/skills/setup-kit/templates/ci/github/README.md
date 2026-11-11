@@ -6,7 +6,7 @@
 - `{{USES_PNPM}}`: keep the `pnpm/action-setup` step and drop the `if` line when the project uses pnpm (it reads the version from `packageManager`); delete the step otherwise. setup-node's `cache: pnpm` fails without it.
 - `{{AUDIT_COMMAND}}`: `pnpm audit --audit-level=high --prod`, `npm audit --audit-level=high --omit=dev`, `composer audit`, `pip-audit`, `govulncheck ./...`. If the audit is red on day one, show the findings and ask whether the job starts as required or as a warning (`continue-on-error: true`) until they are fixed.
 - `dependency-review`: needs the GitHub dependency graph; on private repos it also needs GitHub Code Security. If that is not available, delete the job and keep `audit`; for item 30 use a license tool instead (`npx license-checker-rseidelsohn --onlyAllow "<list>"`, `pip-licenses --allow-only`, `composer licenses`).
-- `{{GITLEAKS_VERSION}}`: the kit's pinned default is `v8.28.0`; write it and list "verify the gitleaks version" in Phase 4, where external calls are allowed (`gh api repos/gitleaks/gitleaks/releases/latest --jq .tag_name`).
+- `{{GITLEAKS_VERSION}}`: the kit's pinned default is `v8.30.1`; write it, then `kit.mjs outdated` (Phase 5 and `doctor`) reports when a newer one exists.
 - Builds that read env variables at build time (Next.js, Vite with a validated env module) need placeholder values in CI: add an `env:` block on the build step with obviously fake values (`https://example.invalid`, `ci-placeholder-not-a-secret`), never real keys.
 - `{{IS_NODE}}` in `security.yml`: keep the Node setup steps only for JS projects; other ecosystems need their own setup step before the audit command.
 - `pr-conventions.yml` `branch` job: keep it only if item 38 is installed.

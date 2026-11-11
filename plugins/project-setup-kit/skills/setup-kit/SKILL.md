@@ -21,6 +21,7 @@ All paths are relative to this skill's folder.
 | `references/languages.md` | Tool mapping per language (linters, type checkers, formatters, test runners, audit tools, dead-code tools). |
 | `references/questionnaire.md` | The rule question bank used by item 1 to fill `AGENTS.md`. |
 | `references/state-file.md` | Schema of `.ai-kit.json` and how update/remove work. |
+| `references/upgrades.md` | What changed in each kit version and what update mode offers for it. |
 | `references/platforms.md` | GitHub (full support) and other platforms (guide-only). |
 | `references/profiles.md` | Presets (minimal, team, strict) that answer most items in advance; the user still reviews the plan and every file. |
 | `references/troubleshooting.md` | What to do when a command, tool, hook, CI run or repository setting fails. Read it on the first error. |
@@ -33,10 +34,10 @@ All paths are relative to this skill's folder.
 - `/setup-kit` with no state file: full setup (flow.md, all phases).
 - `/setup-kit minimal|team|strict`: full setup with that profile preselected (`profiles.md`).
 - `/setup-kit` with an existing `.ai-kit.json`: same as `update`.
-- `/setup-kit update`: compare the installed kit version and the files in `.ai-kit.json` with the current templates; show what changed; never overwrite a file whose current hash differs from the recorded hash without showing the diff and asking. Then offer items that were never answered.
+- `/setup-kit update`: read `references/upgrades.md` and apply every section newer than `kitVersion` in `.ai-kit.json`, oldest first; compare the files in `.ai-kit.json` with the current templates; show what changed; never overwrite a file whose current hash differs from the recorded hash without showing the diff and asking. Then offer items that were never answered.
 - `/setup-kit remove <id>`: list the files and settings recorded for that item, ask for confirmation, remove them, update `AGENTS.md` and `.ai-kit.json`.
 - `/setup-kit status`: print the items with their state (installed, declined, not applicable, pending), the repository settings still pending, and the files waiting in `.ai-kit/pending/` (`kit.mjs pending list`). Change nothing.
-- `/setup-kit doctor`: check that every installed item still works and change nothing: Node version, `.ai-kit/config.json` parses, each recorded file exists and its hash matches, every guard answers a sample payload correctly, hook wiring points to existing scripts, git hooks are installed, the last CI runs of kit workflows passed (`gh run list`). Report each problem with the fix from `troubleshooting.md` and ask before applying any.
+- `/setup-kit doctor`: check that every installed item still works and change nothing: Node version, `.ai-kit/config.json` parses, each recorded file exists and its hash matches, every guard answers a sample payload correctly, hook wiring points to existing scripts, git hooks are installed, the last CI runs of kit workflows passed (`gh run list`), and pinned versions are current (`node <skill-dir>/scripts/kit.mjs outdated`: actions, tool images such as gitleaks, actionlint, zizmor, trivy, hadolint, and MCP packages; for a MAJOR change read the release notes before proposing it). Report each problem with the fix from `troubleshooting.md` and ask before applying any.
 
 ## Non-negotiable rules
 
