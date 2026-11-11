@@ -48,8 +48,14 @@ export function findPins(path, text) {
     for (const match of line.matchAll(/((?:ghcr\.io\/)?[a-z0-9-]+\/[a-z0-9-]+):(v?\d+\.\d+\.\d+)\b/g)) {
       if (DOCKER_IMAGES[match[1]]) pins.push({ ...at, kind: 'image', name: match[1], current: match[2] });
     }
-    for (const match of line.matchAll(/(?:npx\s+(?:-y\s+)?|["'])((?:@[a-z0-9-]+\/)?[a-z0-9][a-z0-9._-]*)@(\d+\.\d+\.\d+)\b/g)) {
+    for (const match of line.matchAll(/(?:npx\s+(?:(?:-y|--yes)\s+)?|["'])((?:@[a-z0-9-]+\/)?[a-z0-9][a-z0-9._-]*)@(\d+\.\d+\.\d+)\b/g)) {
       pins.push({ ...at, kind: 'npm', name: match[1], current: match[2] });
+    }
+    for (const match of line.matchAll(/(?:pip3?\s+install|uvx|pipx\s+run|uv\s+tool\s+run)\s+([A-Za-z0-9][A-Za-z0-9._-]*)==(\d+(?:\.\d+){1,2})\b/g)) {
+      pins.push({ ...at, kind: 'pypi', name: match[1], current: match[2] });
+    }
+    for (const match of line.matchAll(/go\s+(?:run|install)\s+([a-z0-9.-]+\.[a-z]{2,}\/[^@\s]+)@(v\d+\.\d+\.\d+)\b/g)) {
+      pins.push({ ...at, kind: 'go', name: match[1], current: match[2] });
     }
   });
   return pins;
@@ -74,8 +80,29 @@ export function npmLatest(name) {
   return execFileSync('npm', ['view', name, 'version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000, shell: process.platform === 'win32' }).trim();
 }
 
-export function resolveLatest(pin, { tags = gitTags, npm = npmLatest } = {}) {
+export async function pypiLatest(name) {
+  const response = await fetch(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`, { signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error(`PyPI answered ${response.status}`);
+  return (await response.json()).info.version;
+}
+
+function goModuleRoot(path) {
+  const parts = path.split('/');
+  const known = { 'golang.org': 3, 'github.com': 3, 'gitlab.com': 3, 'honnef.co': 3 };
+  return parts.slice(0, known[parts[0]] ?? parts.length).join('/');
+}
+
+export async function goLatest(path) {
+  const module = goModuleRoot(path).replace(/[A-Z]/g, letter => `!${letter.toLowerCase()}`);
+  const response = await fetch(`https://proxy.golang.org/${module}/@latest`, { signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error(`Go proxy answered ${response.status}`);
+  return (await response.json()).Version;
+}
+
+export function resolveLatest(pin, { tags = gitTags, npm = npmLatest, pypi = pypiLatest, go = goLatest } = {}) {
   if (pin.kind === 'npm') return npm(pin.name);
+  if (pin.kind === 'pypi') return pypi(pin.name);
+  if (pin.kind === 'go') return go(pin.name);
   const repo = pin.kind === 'image' ? DOCKER_IMAGES[pin.name].repo : pin.name;
   const all = tags(repo);
   const latest = latestStable(all);
@@ -89,24 +116,30 @@ export function resolveLatest(pin, { tags = gitTags, npm = npmLatest } = {}) {
   return latest;
 }
 
-export function checkOutdated(root, resolvers = {}) {
+export async function checkOutdated(root, resolvers = {}) {
   const pins = listPinnedFiles(root).flatMap(path => findPins(path, readFileSync(join(root, path), 'utf8')));
   const cache = new Map();
-  return pins.map(pin => {
+  const results = [];
+  for (const pin of pins) {
     const key = `${pin.kind}:${pin.name}:${/^v?\d+$/.test(pin.current) ? 'major' : 'full'}`;
     if (!cache.has(key)) {
       try {
-        cache.set(key, { latest: resolveLatest(pin, resolvers) });
+        cache.set(key, { latest: await resolveLatest(pin, resolvers) });
       } catch (error) {
         cache.set(key, { error: error.message.split('\n')[0] });
       }
     }
-    const { latest, error } = cache.get(key);
-    if (error || !latest) return { ...pin, status: 'unknown', error: error ?? 'no released version found' };
-    const newer = compareVersions(latest, pin.current) > 0;
-    const major = newer && parseVersion(latest)[0] !== parseVersion(pin.current)[0];
-    return { ...pin, latest, status: newer ? (major ? 'major' : 'minor') : 'current' };
-  });
+    results.push(classify(pin, cache.get(key)));
+  }
+  return results;
+}
+
+function classify(pin, { latest, error }) {
+  if (error || !latest) return { ...pin, status: 'unknown', error: error ?? 'no released version found' };
+  const newer = compareVersions(latest, pin.current) > 0;
+  const leading = parseVersion(pin.current)[0] === 0 ? 1 : 0;
+  const major = newer && parseVersion(latest)[leading] !== parseVersion(pin.current)[leading];
+  return { ...pin, latest, status: newer ? (major ? 'major' : 'minor') : 'current' };
 }
 
 export function formatOutdated(results) {

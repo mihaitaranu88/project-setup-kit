@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: '"language"\s*:\s*"python"'
+pattern: '"language"\s*:\s*"(?:python)"'
 flags: i
 ---

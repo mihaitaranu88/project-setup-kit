@@ -1,0 +1,8 @@
+{
+  "parts": [{ "path": ".", "language": "ruby", "framework": "rails", "packageManager": "bundler" }],
+  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [{ "id": 15, "missing": "RuboCop is configured but no git hook or CI runs it" }],
+  "notApplicable": [17, 26, 46, 51],
+  "notes": "Rails migrations use change (reversible), so the down-step check uses downRequired false; item 43 recommends strong_migrations."
+}

@@ -42,7 +42,9 @@ React: `eslint-plugin-jsx-a11y`. Vue: `eslint-plugin-vuejs-accessibility`. Angul
 | PHP | `composer audit` | dependency-review, `composer licenses` | `shipmonk/composer-dependency-analyser`, PHPStan dead-code extension |
 | Go | `govulncheck ./...` | dependency-review, `go-licenses` | `deadcode ./...`, `staticcheck` U1000 |
 | Java | OWASP dependency-check | dependency-review | PMD unused rules |
-| C# | `dotnet list package --vulnerable` | dependency-review | IDE0051/IDE0052 analyzers |
+| C# | `dotnet list package --vulnerable --include-transitive` | dependency-review | IDE0051/IDE0052 analyzers |
+| Ruby | `bundler-audit check --update` | dependency-review, `license_finder` | `debride`, `rubocop` Lint/UselessMethodDefinition |
+| Rust | `cargo audit` (or `cargo deny check advisories`) | `cargo deny check licenses` | `cargo +nightly udeps` (unused dependencies), compiler dead-code warnings |
 
 Secrets: gitleaks for every language. Duplicate code (when Sonar is not used): jscpd for every language.
 
@@ -56,4 +58,4 @@ If one already exists, extend it.
 
 ## Env validation (item 20)
 
-TS: zod schema parsed at startup (or `@t3-oss/env-core`, envalid). Python: pydantic-settings `BaseSettings`. PHP/Laravel: a config check in a service provider that throws on missing keys, or `vlucas/phpdotenv` `required()`. Go: a struct loaded with `caarlos0/env` and `required` tags. Java/Spring: `@ConfigurationProperties` + `@Validated`. C#: options pattern with `ValidateDataAnnotations().ValidateOnStart()`.
+TS: zod schema parsed at startup (or `@t3-oss/env-core`, envalid). Python: pydantic-settings `BaseSettings`. PHP/Laravel: a config check in a service provider that throws on missing keys, or `vlucas/phpdotenv` `required()`. Go: a struct loaded with `caarlos0/env` and `required` tags. Java/Spring: `@ConfigurationProperties` + `@Validated`. C#: options pattern with `ValidateDataAnnotations().ValidateOnStart()`. Ruby/Rails: `ENV.fetch` for required keys in `config/initializers/` (or the `dotenv` `Dotenv.require_keys`). Rust: a config struct loaded with `envy` or `config` + `serde` at startup, failing on missing keys.

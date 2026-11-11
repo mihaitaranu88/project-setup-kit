@@ -24,5 +24,5 @@ jobs:
         run: |
           files=$(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" | grep -E '{{SOURCE_FILES_REGEX}}' || true)
           if [ -z "$files" ]; then echo "No source files changed."; exit 0; fi
-          npx --yes jscpd@4 --min-lines 8 --reporters console --ignore "{{GENERATED_GLOBS}}" {{SOURCE_DIRS}} | tee jscpd.txt
+          npx --yes jscpd@5.4.3 --min-lines 8 --reporters console --ignore "{{GENERATED_GLOBS}}" {{SOURCE_DIRS}} | tee jscpd.txt
           for file in $files; do grep -F "$file" jscpd.txt && echo "::warning file=$file::Duplicated block found, consider reusing existing code." || true; done

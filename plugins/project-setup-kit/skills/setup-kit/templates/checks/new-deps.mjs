@@ -164,6 +164,23 @@ export const MANIFESTS = [
   },
 ];
 
+MANIFESTS.push(
+  {
+    file: 'Gemfile',
+    ecosystem: 'rubygems',
+    parse(text) {
+      return [...text.matchAll(/^\s*gem\s+["']([^"']+)["']([^\n]*)/gm)].filter(match => !/\b(?:path|git|github):/.test(match[2])).map(match => match[1]);
+    },
+  },
+  {
+    file: /\.(?:cs|fs|vb)proj$|^Directory\.Packages\.props$/,
+    ecosystem: 'nuget',
+    parse(text) {
+      return [...text.matchAll(/<Package(?:Reference|Version)\s+(?:Include|Update)="([^"]+)"/g)].map(match => match[1]);
+    },
+  },
+);
+
 export function manifestFor(path) {
   const name = basename(path);
   return MANIFESTS.find(manifest => (typeof manifest.file === 'string' ? manifest.file === name : manifest.file.test(name))) ?? null;
@@ -204,7 +221,7 @@ function collectChanges(baseRef) {
 
 async function main() {
   const config = loadKitConfig();
-  const policy = resolveDependencyPolicy(config);
+  const policy = resolveDependencyPolicy(config, REPO_ROOT);
   const baseRef = hasFlag('staged') ? 'HEAD' : resolveBaseRef(config);
   const added = findNewDependencies(collectChanges(baseRef));
   if (added.length === 0) {

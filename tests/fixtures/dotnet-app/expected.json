@@ -1,0 +1,8 @@
+{
+  "parts": [{ "path": "src/Api", "language": "csharp", "framework": "aspnet-core", "packageManager": "dotnet" }],
+  "has": { "frontend": false, "api": true, "db": true, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [{ "id": 14, "missing": "Nullable is enabled but TreatWarningsAsErrors is not" }],
+  "notApplicable": [17, 19, 26, 46, 51],
+  "notes": "Item 19 does not apply: NuGet resolves from a shared cache."
+}

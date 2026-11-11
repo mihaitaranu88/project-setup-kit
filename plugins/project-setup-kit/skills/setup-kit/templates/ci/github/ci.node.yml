@@ -31,4 +31,4 @@ node:
     - name: Dead code (warning)
       if: "{{ITEM_24}}"
       continue-on-error: true
-      run: npx --yes knip@5 --no-exit-code
+      run: npx --yes knip@6.45.1 --no-exit-code

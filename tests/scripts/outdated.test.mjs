@@ -32,7 +32,9 @@ describe('outdated pins', () => {
       `      - uses: actions/setup-node@${SHA} # v4`,
       '      - uses: ./.github/actions/local',
       '      - run: docker run rhysd/actionlint:1.7.1 && docker run aquasec/trivy:0.76.2 config .',
-      '      - run: npx squawk-cli@2.72.0 a.sql',
+      '      - run: npx squawk-cli@2.72.0 a.sql && npx --yes knip@6.45.1',
+      '      - run: uvx vulture==2.16 . && pip install diff-cover==11.0.1',
+      '      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...',
     ].join('\n');
     assert.deepEqual(findPins('ci.yml', text).map(pin => `${pin.kind}:${pin.name}@${pin.current}`), [
       'action:actions/checkout@v4',
@@ -40,6 +42,10 @@ describe('outdated pins', () => {
       'image:rhysd/actionlint@1.7.1',
       'image:aquasec/trivy@0.76.2',
       'npm:squawk-cli@2.72.0',
+      'npm:knip@6.45.1',
+      'pypi:vulture@2.16',
+      'pypi:diff-cover@11.0.1',
+      'go:golang.org/x/vuln/cmd/govulncheck@v1.9.0',
     ]);
   });
 
@@ -47,12 +53,12 @@ describe('outdated pins', () => {
     assert.equal(latestStable(['v7.0.1', 'v7.1.0-beta', 'v6.9.9']), 'v7.0.1');
   });
 
-  it('should report major and minor updates and stay quiet about current pins', () => {
+  it('should report major and minor updates and stay quiet about current pins', async () => {
     const root = project({
       '.github/workflows/ci.yml': `jobs:\n  a:\n    steps:\n      - uses: actions/checkout@v7\n      - uses: actions/setup-node@${SHA} # v4\n      - run: docker run rhysd/actionlint:1.7.1\n      - uses: astral-sh/setup-uv@v10.3.3\n`,
       '.mcp.json': '{"mcpServers":{"docs":{"command":"npx","args":["-y","@upstash/context7-mcp@4.6.0"]}}}',
     });
-    const results = checkOutdated(root, resolvers);
+    const results = await checkOutdated(root, resolvers);
     const byName = Object.fromEntries(results.map(result => [result.name, result]));
     assert.equal(byName['actions/checkout'].status, 'current');
     assert.equal(byName['actions/setup-node'].status, 'major');
@@ -65,9 +71,9 @@ describe('outdated pins', () => {
     assert.match(report, /3 of 5 pinned versions are behind/);
   });
 
-  it('should mark a pin as unknown when its releases cannot be read', () => {
+  it('should mark a pin as unknown when its releases cannot be read', async () => {
     const root = project({ '.github/workflows/ci.yml': '      - uses: actions/checkout@v4\n' });
-    const [result] = checkOutdated(root, { tags: () => { throw new Error('network down'); } });
+    const [result] = await checkOutdated(root, { tags: () => { throw new Error('network down'); } });
     assert.equal(result.status, 'unknown');
     assert.match(formatOutdated([result]), /\?\s+\.github\/workflows\/ci\.yml:1 actions\/checkout v4 \(network down\)/);
   });

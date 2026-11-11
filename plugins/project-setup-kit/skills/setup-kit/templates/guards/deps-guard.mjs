@@ -1,12 +1,12 @@
 import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { loadKitConfig, runGuard } from './hook-io.mjs';
+import { loadKitConfig, resolveCwd, runGuard } from './hook-io.mjs';
 import { checkPackages, describeResult, findInstalledPackages, resolveDependencyPolicy } from './package-registry.mjs';
 
 export async function checkDepsCall(call, config, options = {}) {
   const packages = call.commands.flatMap(command => findInstalledPackages(command));
   if (packages.length === 0) return null;
-  const policy = resolveDependencyPolicy(config);
+  const policy = resolveDependencyPolicy(config, options.root ?? resolveCwd(call));
   const results = await checkPackages(packages, policy, options);
   const flagged = results.filter(result => result.level === 'block' || result.level === 'warn');
   if (flagged.length === 0) return null;

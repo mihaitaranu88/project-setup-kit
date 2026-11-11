@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 const TEMPLATES = '../../plugins/project-setup-kit/skills/setup-kit/templates';
-const { assessPackage, checkPackages, findInstalledPackages, isAllowed, lookupPackage, resolveDependencyPolicy } = await import(`${TEMPLATES}/guards/package-registry.mjs`);
+const { assessPackage, checkPackages, findInstalledPackages, isAllowed, lookupPackage, readPrivateRegistries, resolveDependencyPolicy } = await import(`${TEMPLATES}/guards/package-registry.mjs`);
 const { checkDepsCall } = await import(`${TEMPLATES}/guards/deps-guard.mjs`);
 const { findNewDependencies, manifestFor } = await import(`${TEMPLATES}/checks/new-deps.mjs`);
 
@@ -46,6 +49,10 @@ describe('install command parsing', () => {
     ['cargo add serde --features derive', [['crates', 'serde']]],
     ['go get github.com/spf13/cobra@v1.8.0', [['go', 'github.com/spf13/cobra']]],
     ['go install ./...', []],
+    ['bundle add sidekiq --group development', [['rubygems', 'sidekiq']]],
+    ['gem install rubocop -v 1.69.0', [['rubygems', 'rubocop']]],
+    ['dotnet add package Serilog --version 4.0.0', [['nuget', 'Serilog']]],
+    ['dotnet add src/Api.csproj package Polly', [['nuget', 'Polly']]],
     ['cd web && npm install react && npm test', [['npm', 'react']]],
     ['echo npm install react', []],
     ['git commit -m "npm install react"', []],
@@ -88,6 +95,30 @@ describe('registry assessment', () => {
     const scoped = { ...policy, allow: ['@acme/*'] };
     assert.equal(isAllowed('@acme/ui', scoped), true);
     assert.deepEqual(await checkPackages([{ ecosystem: 'npm', name: '@acme/ui' }], scoped, { fetchImpl: REGISTRY, now: NOW }), []);
+  });
+});
+
+describe('private registries', () => {
+  function root(files) {
+    const dir = mkdtempSync(join(tmpdir(), 'kit-registry-'));
+    for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, name), content);
+    return dir;
+  }
+
+  it('should allow scopes that come from a private npm registry', () => {
+    const registries = readPrivateRegistries(root({ '.npmrc': '@acme:registry=https://npm.acme.test/\n//npm.acme.test/:_authToken=${NPM_TOKEN}\n' }));
+    assert.deepEqual(registries, { allow: ['@acme/*'], ecosystems: [] });
+  });
+
+  it('should skip a whole ecosystem when its default registry is replaced', async () => {
+    const dir = root({ '.npmrc': 'registry=https://artifactory.acme.test/api/npm/npm/\n', 'pyproject.toml': '[[tool.uv.index]]\nurl = "https://pypi.acme.test/simple"\n' });
+    const policy = resolveDependencyPolicy({}, dir);
+    assert.deepEqual(policy.privateEcosystems.sort(), ['npm', 'pypi']);
+    assert.deepEqual(await checkPackages([{ ecosystem: 'npm', name: 'internal-lib' }], policy, { fetchImpl: REGISTRY, now: NOW }), []);
+  });
+
+  it('should keep checking when the npm registry is the public one', () => {
+    assert.deepEqual(readPrivateRegistries(root({ '.npmrc': 'registry=https://registry.npmjs.org/\nsave-exact=true\n' })).ecosystems, []);
   });
 });
 
@@ -140,6 +171,14 @@ describe('new dependencies in manifests', () => {
       'go:golang.org/x/sync',
       'maven:org.springframework:spring-core',
     ]);
+  });
+
+  it('should read Gemfile and .NET project files', () => {
+    const changes = [
+      { path: 'Gemfile', before: 'gem "rails"\n', after: 'gem "rails"\ngem "sidekiq", "~> 7"\ngem "local", path: "../local"\n' },
+      { path: 'src/Api/Api.csproj', before: '', after: '<ItemGroup><PackageReference Include="Serilog" Version="4.0.0" /></ItemGroup>' },
+    ];
+    assert.deepEqual(findNewDependencies(changes).map(dep => `${dep.ecosystem}:${dep.name}`), ['rubygems:sidekiq', 'nuget:Serilog']);
   });
 
   it('should recognize manifest files by name only', () => {

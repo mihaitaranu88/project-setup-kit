@@ -43,7 +43,7 @@ const packageVersion = JSON.parse(read('package.json')).version;
 if (packageVersion !== plugin.version) problems.push(`version mismatch: package.json ${packageVersion}, plugin ${plugin.version}`);
 if (!read('CHANGELOG.md').includes(`## ${plugin.version}`)) problems.push(`CHANGELOG.md has no section for ${plugin.version}`);
 
-for (const fixture of ['ts-app', 'python-app', 'php-app', 'go-app', 'java-app', 'monorepo', 'empty']) {
+for (const fixture of ['ts-app', 'python-app', 'php-app', 'go-app', 'java-app', 'monorepo', 'empty', 'rust-app', 'dotnet-app', 'ruby-app', 'kotlin-app']) {
   if (!existsSync(join(ROOT, 'tests/fixtures', fixture, 'expected.json'))) problems.push(`fixture ${fixture} has no expected.json`);
 }
 

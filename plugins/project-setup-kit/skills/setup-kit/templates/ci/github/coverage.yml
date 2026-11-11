@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - run: pip install diff-cover
+      - run: pip install diff-cover==11.0.1
       - name: Coverage of changed lines
         env:
           BASE_REF: ${{ github.base_ref }}

@@ -1,0 +1,8 @@
+{
+  "parts": [{ "path": ".", "language": "kotlin", "framework": "spring-boot", "packageManager": "gradle" }],
+  "has": { "frontend": false, "api": true, "db": false, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [],
+  "notApplicable": [17, 19, 26, 42, 43, 46, 51],
+  "notes": "Kotlin uses ci.java.yml with Gradle; item 15 maps to detekt/ktlint. The Gradle wrapper is missing and should be proposed."
+}

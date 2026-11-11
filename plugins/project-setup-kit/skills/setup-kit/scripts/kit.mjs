@@ -373,8 +373,7 @@ function runCommand(argv, cwd, root) {
     return JSON.stringify(readPluginRules(root, plugin, readOption(args, 'via'), readOption(args, 'config') ?? 'recommended'), null, 2);
   }
   if (command === 'outdated') {
-    const results = checkOutdated(root);
-    return args.includes('--json') ? JSON.stringify(results, null, 2) : formatOutdated(results);
+    return checkOutdated(root).then(results => (args.includes('--json') ? JSON.stringify(results, null, 2) : formatOutdated(results)));
   }
   if (command === 'pin-actions') {
     const files = positional(args).map(path => resolve(cwd, path));
@@ -486,7 +485,7 @@ function runCommand(argv, cwd, root) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   try {
-    process.stdout.write(`${run(process.argv.slice(2))}\n`);
+    process.stdout.write(`${await run(process.argv.slice(2))}\n`);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exitCode = { EXISTS: 3, PROTECTED: 4, UNPINNED: 5 }[error.code] ?? 1;

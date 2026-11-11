@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: '"language"\s*:\s*"java"'
+pattern: '"language"\s*:\s*"(?:java)"'
 flags: i
 ---

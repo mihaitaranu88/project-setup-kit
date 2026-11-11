@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const DEFAULT_DEPENDENCY_POLICY = {
@@ -7,8 +10,39 @@ export const DEFAULT_DEPENDENCY_POLICY = {
   timeoutMs: 5000,
 };
 
-export function resolveDependencyPolicy(config) {
-  return { ...DEFAULT_DEPENDENCY_POLICY, ...(config.dependencyCheck ?? {}) };
+export function resolveDependencyPolicy(config, root = null) {
+  const policy = { ...DEFAULT_DEPENDENCY_POLICY, ...(config.dependencyCheck ?? {}) };
+  if (!root) return policy;
+  const registries = readPrivateRegistries(root);
+  return { ...policy, allow: [...(policy.allow ?? []), ...registries.allow], privateEcosystems: registries.ecosystems };
+}
+
+function readText(path) {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+export function readPrivateRegistries(root) {
+  const allow = [];
+  const ecosystems = [];
+  const npmrc = readText(join(root, '.npmrc'));
+  for (const match of npmrc.matchAll(/^\s*(@[^:\s]+):registry\s*=/gm)) allow.push(`${match[1]}/*`);
+  const npmRegistry = npmrc.match(/^\s*registry\s*=\s*(\S+)/m)?.[1];
+  if (npmRegistry && !/registry\.npmjs\.org/.test(npmRegistry)) ecosystems.push('npm');
+  const yarnrc = readText(join(root, '.yarnrc.yml'));
+  const yarnRegistry = yarnrc.match(/^npmRegistryServer:\s*["']?(\S+?)["']?\s*$/m)?.[1];
+  if (yarnRegistry && !/registry\.(?:npmjs\.org|yarnpkg\.com)/.test(yarnRegistry)) ecosystems.push('npm');
+  const python = `${readText(join(root, 'pip.conf'))}\n${readText(join(root, 'pyproject.toml'))}\n${readText(join(root, 'uv.toml'))}`;
+  if (/^\s*index-url\s*=|\[\[tool\.uv\.index\]\]|\[\[index\]\]|\[\[tool\.poetry\.source\]\]/m.test(python) || process.env.PIP_INDEX_URL || process.env.UV_INDEX_URL) ecosystems.push('pypi');
+  const composer = readText(join(root, 'composer.json'));
+  if (/"repositories"\s*:/.test(composer)) ecosystems.push('packagist');
+  const nuget = readText(join(root, 'nuget.config')) || readText(join(root, 'NuGet.Config'));
+  if (/<add\s+key="[^"]+"\s+value="https?:\/\/(?!api\.nuget\.org)/i.test(nuget)) ecosystems.push('nuget');
+  if (process.env.GOPRIVATE) for (const pattern of process.env.GOPRIVATE.split(',')) allow.push(`${pattern.trim()}*`);
+  return { allow, ecosystems: [...new Set(ecosystems)] };
 }
 
 function globToRegex(glob) {
@@ -61,18 +95,37 @@ const LOOKUPS = {
     const meta = await getJson(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`, options);
     if (meta.missing) return { exists: false };
     const uploads = Object.values(meta.body.releases ?? {}).flat().map(file => file.upload_time_iso_8601 ?? file.upload_time);
-    return { exists: true, createdAt: earliest(uploads), weeklyDownloads: null };
+    const stats = await getJson(`https://pypistats.org/api/packages/${encodeURIComponent(name.toLowerCase())}/recent`, options).catch(() => ({}));
+    const weekly = stats.body?.data?.last_week;
+    return { exists: true, createdAt: earliest(uploads), weeklyDownloads: typeof weekly === 'number' ? weekly : null };
   },
   async packagist(name, options) {
     const meta = await getJson(`https://repo.packagist.org/p2/${name.toLowerCase()}.json`, options);
     if (meta.missing) return { exists: false };
     const versions = meta.body.packages?.[name.toLowerCase()] ?? [];
-    return { exists: true, createdAt: earliest(versions.map(version => version.time)), weeklyDownloads: null };
+    const stats = await getJson(`https://packagist.org/packages/${name.toLowerCase()}/stats.json`, options).catch(() => ({}));
+    const monthly = stats.body?.downloads?.monthly;
+    return { exists: true, createdAt: earliest(versions.map(version => version.time)), weeklyDownloads: typeof monthly === 'number' ? Math.round(monthly / 4.3) : null };
   },
   async crates(name, options) {
     const meta = await getJson(`https://crates.io/api/v1/crates/${encodeURIComponent(name)}`, options);
     if (meta.missing) return { exists: false };
-    return { exists: true, createdAt: meta.body.crate?.created_at ? new Date(meta.body.crate.created_at) : null, weeklyDownloads: null };
+    const recent = meta.body.crate?.recent_downloads;
+    return {
+      exists: true,
+      createdAt: meta.body.crate?.created_at ? new Date(meta.body.crate.created_at) : null,
+      weeklyDownloads: typeof recent === 'number' ? Math.round(recent / 13) : null,
+    };
+  },
+  async rubygems(name, options) {
+    const versions = await getJson(`https://rubygems.org/api/v1/versions/${encodeURIComponent(name)}.json`, options);
+    if (versions.missing) return { exists: false };
+    return { exists: true, createdAt: earliest((versions.body ?? []).map(version => version.created_at)), weeklyDownloads: null };
+  },
+  async nuget(name, options) {
+    const versions = await getJson(`https://api.nuget.org/v3-flatcontainer/${name.toLowerCase()}/index.json`, options);
+    if (versions.missing) return { exists: false };
+    return { exists: true, createdAt: null, weeklyDownloads: null };
   },
   async go(name, options) {
     const versions = await getText(`https://proxy.golang.org/${encodeGoModule(name)}/@v/list`, options);
@@ -92,7 +145,7 @@ const LOOKUPS = {
   },
 };
 
-export const ECOSYSTEM_LABELS = { npm: 'npm', pypi: 'PyPI', packagist: 'Packagist', crates: 'crates.io', go: 'the Go module proxy', maven: 'Maven Central' };
+export const ECOSYSTEM_LABELS = { npm: 'npm', pypi: 'PyPI', packagist: 'Packagist', crates: 'crates.io', go: 'the Go module proxy', maven: 'Maven Central', rubygems: 'RubyGems', nuget: 'NuGet' };
 
 export async function lookupPackage(ecosystem, name, { fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_DEPENDENCY_POLICY.timeoutMs } = {}) {
   const lookup = LOOKUPS[ecosystem];
@@ -119,9 +172,10 @@ export function assessPackage(info, policy, now = Date.now()) {
 }
 
 export async function checkPackages(packages, policy, options = {}) {
+  const privateEcosystems = new Set(policy.privateEcosystems ?? []);
   const results = await Promise.all(
     packages
-      .filter(pkg => !isAllowed(pkg.name, policy))
+      .filter(pkg => !isAllowed(pkg.name, policy) && !privateEcosystems.has(pkg.ecosystem))
       .map(async pkg => ({ ...pkg, ...assessPackage(await lookupPackage(pkg.ecosystem, pkg.name, { timeoutMs: policy.timeoutMs, ...options }), policy, options.now) })),
   );
   return results;
@@ -163,6 +217,9 @@ const INSTALLERS = [
   { pattern: /^poetry$/, verbs: ['add'], ecosystem: 'pypi', name: pythonName, flagsWithValue: ['-G', '--group', '--source'] },
   { pattern: /^composer$/, verbs: ['require'], ecosystem: 'packagist', name: spec => (/^[a-z0-9_.-]+\/[a-z0-9_.-]+/i.test(spec) ? spec.split(':')[0].toLowerCase() : null), flagsWithValue: [] },
   { pattern: /^cargo$/, verbs: ['add'], ecosystem: 'crates', name: spec => (isLocalSpec(spec) ? null : spec.split('@')[0]), flagsWithValue: ['--path', '--git', '--branch', '--tag', '--rev', '-F', '--features', '--rename', '--registry', '-p', '--package'] },
+  { pattern: /^gem$/, verbs: ['install'], ecosystem: 'rubygems', name: spec => (/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(spec) && !spec.endsWith('.gem') ? spec : null), flagsWithValue: ['-v', '--version', '-i', '--install-dir', '--source'] },
+  { pattern: /^bundle$/, verbs: ['add'], ecosystem: 'rubygems', name: spec => (/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(spec) ? spec : null), flagsWithValue: ['--version', '-v', '--group', '-g', '--source', '-s', '--git', '--path', '--branch'] },
+  { pattern: /^dotnet$/, verbs: ['add package'], ecosystem: 'nuget', name: spec => (/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(spec) && !/\.(?:cs|fs|vb)proj$/.test(spec) ? spec : null), flagsWithValue: ['-v', '--version', '-f', '--framework', '-s', '--source', '--package-directory'] },
   { pattern: /^go$/, verbs: ['get', 'install'], ecosystem: 'go', name: spec => (/^[a-z0-9.-]+\.[a-z]{2,}\/\S+/i.test(spec) ? spec.split('@')[0].replace(/\/\.\.\.$/, '') : null), flagsWithValue: [] },
 ];
 
@@ -175,6 +232,7 @@ export function findInstalledPackages(command) {
       else words.shift();
     }
     if (words.length === 0) continue;
+    if (words[0] === 'dotnet' && words[1] === 'add' && words[3] === 'package') words.splice(2, 1);
     const installer = INSTALLERS.find(candidate => candidate.pattern.test(words[0]));
     if (!installer) continue;
     const rest = words.slice(1);

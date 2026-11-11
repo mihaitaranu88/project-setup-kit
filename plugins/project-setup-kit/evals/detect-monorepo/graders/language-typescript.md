@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: '"language"\s*:\s*"typescript"'
+pattern: '"language"\s*:\s*"(?:typescript|ts)"'
 flags: i
 ---

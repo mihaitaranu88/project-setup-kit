@@ -1,0 +1,3 @@
+[package]
+name = "fixture-rust-app"
+version = "0.1.0"

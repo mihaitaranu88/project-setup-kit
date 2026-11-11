@@ -1,0 +1,8 @@
+{
+  "parts": [{ "path": ".", "language": "rust", "framework": "axum", "packageManager": "cargo" }],
+  "has": { "frontend": false, "api": true, "db": false, "severalServices": false, "versionedReleases": false },
+  "alreadyConfigured": [],
+  "partial": [],
+  "notApplicable": [14, 17, 19, 26, 42, 43, 46, 51],
+  "notes": "Item 14 does not apply: Rust is strictly typed. Item 19 does not apply: cargo has no local install folder."
+}

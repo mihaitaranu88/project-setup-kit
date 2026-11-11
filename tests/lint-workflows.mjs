@@ -10,7 +10,7 @@ const WORKFLOWS = join(ROOT, 'plugins/project-setup-kit/skills/setup-kit/templat
 const EXTRA = [join(ROOT, 'plugins/project-setup-kit/skills/setup-kit/templates/agent-env/copilot-setup-steps.yml')];
 export const ACTIONLINT_IMAGE = 'rhysd/actionlint:1.7.12';
 export const ZIZMOR_IMAGE = 'ghcr.io/zizmorcore/zizmor:1.32.0';
-const LANGUAGES = ['node', 'python', 'php', 'go', 'java'];
+const LANGUAGES = ['node', 'python', 'php', 'go', 'java', 'dotnet', 'ruby', 'rust'];
 
 export function renderTemplate(text) {
   return text
