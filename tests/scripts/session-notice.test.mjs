@@ -6,8 +6,9 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const SCRIPT = fileURLToPath(new URL('../../plugins/project-setup-kit/hooks/session-notice.mjs', import.meta.url));
-const { buildNotice, compareVersions } = await import(SCRIPT);
+const SCRIPT_URL = new URL('../../plugins/project-setup-kit/hooks/session-notice.mjs', import.meta.url);
+const SCRIPT = fileURLToPath(SCRIPT_URL);
+const { buildNotice, compareVersions } = await import(SCRIPT_URL.href);
 
 function project(state) {
   const root = mkdtempSync(join(tmpdir(), 'kit-notice-'));
