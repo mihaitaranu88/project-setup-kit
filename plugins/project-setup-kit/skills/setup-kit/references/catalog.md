@@ -131,7 +131,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - ci: item 21
 
 ### 14 · Strict type checking
-- applies-when: the language has a type checker (TS, Python, PHP, Go is already strict, Java/C# compiler warnings)
+- applies-when: the language has an optional strictness switch (TypeScript, Python, PHP, Java/C# warnings-as-errors). Go and Rust: not applicable — the compiler is already strict; report it under "Not applicable".
 - recommend: yes — the cheapest safety net for AI-written code. New project: strict now. Existing project with new type errors: enable strict for new folders only, or let item 16 hold the errors to changed lines once it is installed.
 - writes: `tsconfig` `strict: true`; mypy/pyright strict; PHPStan level; see `languages.md`
 

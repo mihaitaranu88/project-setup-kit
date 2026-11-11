@@ -104,6 +104,11 @@ describe('skill evaluation helpers', () => {
     const actual = { mode: 'existing', parts: [{ language: 'typescript' }], has: { frontend: false }, notApplicable: [] };
     assert.equal(compareAnalysis(expected, actual).length, 5);
   });
+
+  it('should accept an item reported as already configured instead of not applicable', () => {
+    const expected = { parts: [{ language: 'go' }], has: {}, notApplicable: [14] };
+    assert.deepEqual(compareAnalysis(expected, { parts: [{ language: 'go' }], has: {}, alreadyConfigured: [14] }), []);
+  });
 });
 
 describe('Windows support', () => {

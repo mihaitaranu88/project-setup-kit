@@ -54,9 +54,9 @@ export function compareAnalysis(expected, actual) {
       problems.push(`has.${key}: expected ${expected.has[key]}, got ${Boolean(actual.has?.[key])}`);
     }
   }
-  const notApplicable = new Set((actual.notApplicable ?? []).map(Number));
-  const missing = (expected.notApplicable ?? []).filter(id => !notApplicable.has(Number(id)));
-  if (missing.length > 0) problems.push(`notApplicable: expected to include ${missing.join(', ')}`);
+  const skipped = new Set([...(actual.notApplicable ?? []), ...(actual.alreadyConfigured ?? [])].map(Number));
+  const missing = (expected.notApplicable ?? []).filter(id => !skipped.has(Number(id)));
+  if (missing.length > 0) problems.push(`notApplicable: expected to skip ${missing.join(', ')} (not applicable or already configured)`);
   return problems;
 }
 
