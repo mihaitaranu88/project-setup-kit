@@ -184,7 +184,8 @@ describe('stop-check', () => {
   });
 
   it('should combine per-file rules and project commands when files changed', () => {
-    assert.deepEqual(planStopCommands(['src/a.ts', 'README.md'], { commands: ['tsc --noEmit'] }, rules), ["eslint 'src/a.ts'", 'tsc --noEmit']);
+    const quoted = process.platform === 'win32' ? '"src/a.ts"' : "'src/a.ts'";
+    assert.deepEqual(planStopCommands(['src/a.ts', 'README.md'], { commands: ['tsc --noEmit'] }, rules), [`eslint ${quoted}`, 'tsc --noEmit']);
   });
 
   it('should drop per-file rules when runPostEditRules is false', () => {

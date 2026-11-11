@@ -121,6 +121,6 @@ describe('Windows support', () => {
   });
 
   it('should name worktree folders without path separators', () => {
-    assert.equal(worktreePath('/work/app', 'feat/PROJ-1-x'), '/work/app-feat-PROJ-1-x');
+    assert.equal(worktreePath(join('work', 'app'), 'feat/PROJ-1-x'), join('work', 'app-feat-PROJ-1-x'));
   });
 });

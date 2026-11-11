@@ -25,6 +25,10 @@ const PROMPT_BODY = `Run the project setup kit for this repository.
 
 Read \`${SKILL_TARGET}/SKILL.md\` and follow it exactly, including the conversation flow in \`${SKILL_TARGET}/references/flow.md\`. Wherever the kit says \`<skill-dir>\`, use \`${SKILL_TARGET}\`. Ask one item at a time, give your recommendation and the reason, and write nothing without my consent.`;
 
+function toPosix(path) {
+  return path.split(/[\\/]/).join('/');
+}
+
 export function readOption(args, name) {
   const index = args.indexOf(`--${name}`);
   return index >= 0 ? args[index + 1] ?? null : null;
@@ -57,16 +61,16 @@ export function installSkill(root, { tool, gitignore = true }) {
   mkdirSync(dirname(target), { recursive: true });
   cpSync(SKILL_SOURCE, target, { recursive: true, force: true });
   writeFileSync(join(target, 'VERSION'), `${VERSION}\n`);
-  const written = [SKILL_TARGET];
+  const written = [toPosix(SKILL_TARGET)];
   const prompt = promptFileFor(tool);
   if (prompt) {
     mkdirSync(dirname(join(root, prompt.path)), { recursive: true });
     if (!existsSync(join(root, prompt.path))) {
       writeFileSync(join(root, prompt.path), prompt.content);
-      written.push(prompt.path);
+      written.push(toPosix(prompt.path));
     }
   }
-  if (gitignore && appendLineOnce(join(root, '.gitignore'), `/${SKILL_TARGET.split('\\').join('/')}/`)) written.push('.gitignore');
+  if (gitignore && appendLineOnce(join(root, '.gitignore'), `/${toPosix(SKILL_TARGET)}/`)) written.push('.gitignore');
   return { written, prompt };
 }
 
@@ -143,7 +147,7 @@ export function installGuards(root, { tool, force = false }) {
       const dest = join(dir, `${guard}.json`);
       if (existsSync(wiring) && (!existsSync(dest) || force)) {
         cpSync(wiring, dest);
-        written.push(relative(root, dest));
+        written.push(toPosix(relative(root, dest)));
       }
     }
   }

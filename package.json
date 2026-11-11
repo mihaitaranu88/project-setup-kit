@@ -9,8 +9,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tests/scripts/*.test.mjs",
-    "check": "node tests/check-kit.mjs && node --test tests/scripts/*.test.mjs",
+    "test": "node tests/run-tests.mjs",
+    "check": "node tests/check-kit.mjs && node tests/run-tests.mjs",
     "eval": "node tests/eval-skill.mjs"
   },
   "bin": {

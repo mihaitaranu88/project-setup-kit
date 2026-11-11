@@ -1,10 +1,14 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
-import { basename, dirname, extname, join, normalize, relative } from 'node:path';
+import { basename, dirname, extname, join, normalize, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REPO_ROOT, annotate, loadKitConfig } from './lib.mjs';
 
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)/g;
 const BACKTICK_PATH = /`((?:\.claude|\.github|\.cursor|\.ai-kit|docs)\/[^`\s*{}<>]+)`/g;
+
+function toPosix(path) {
+  return path.split(sep).join('/');
+}
 
 function listEntries(root, dir) {
   const absolute = join(root, dir);
@@ -12,12 +16,12 @@ function listEntries(root, dir) {
   return readdirSync(absolute)
     .filter(name => !name.startsWith('.') && name.toLowerCase() !== 'readme.md')
     .map(name => {
-      const path = join(dir, name);
+      const path = toPosix(join(dir, name));
       const isDirectory = statSync(join(root, path)).isDirectory();
       return {
         path,
         name: isDirectory ? name : basename(name, extname(name)).replace(/\.(agent|prompt)$/, ''),
-        markdownFiles: isDirectory ? [join(path, 'SKILL.md')].filter(file => existsSync(join(root, file))) : [path],
+        markdownFiles: isDirectory ? [`${path}/SKILL.md`].filter(file => existsSync(join(root, file))) : [path],
       };
     })
     .filter(entry => entry.markdownFiles.length > 0 && entry.markdownFiles.every(file => file.endsWith('.md')));
@@ -41,8 +45,8 @@ export function findBrokenReferences(root, file) {
   const fromFile = [...content.matchAll(MARKDOWN_LINK)]
     .map(match => match[1])
     .filter(target => !/^[a-z]+:/i.test(target))
-    .map(target => normalize(join(dirname(file), decodeURIComponent(target))));
-  const fromRoot = [...content.matchAll(BACKTICK_PATH)].map(match => normalize(match[1].replace(/[.,:;)]$/, '')));
+    .map(target => toPosix(normalize(join(dirname(file), decodeURIComponent(target)))));
+  const fromRoot = [...content.matchAll(BACKTICK_PATH)].map(match => toPosix(normalize(match[1].replace(/[.,:;)]$/, ''))));
   return [...new Set([...fromFile, ...fromRoot])]
     .filter(target => !relative(root, join(root, target)).startsWith('..'))
     .filter(target => !existsOrPending(root, target));

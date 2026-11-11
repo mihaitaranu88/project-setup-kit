@@ -64,7 +64,8 @@ describe('lint ratchet', () => {
   });
 
   it('should quote every file when building the command', () => {
-    assert.equal(buildCommand('eslint {files}', ["a b.ts", "it's.ts"]), `eslint 'a b.ts' 'it'\\''s.ts'`);
+    const expected = process.platform === 'win32' ? `eslint "a b.ts" "it's.ts"` : `eslint 'a b.ts' 'it'\\''s.ts'`;
+    assert.equal(buildCommand('eslint {files}', ['a b.ts', "it's.ts"]), expected);
   });
 });
 
