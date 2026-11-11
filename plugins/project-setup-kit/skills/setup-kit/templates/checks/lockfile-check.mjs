@@ -8,7 +8,7 @@ export function classifyInstall(root, pair) {
   const installed = join(root, pair.installed);
   if (!existsSync(lock)) return 'no-lockfile';
   if (!existsSync(installed)) return 'not-installed';
-  if (pair.sameContent && readFileSync(lock, 'utf8') === readFileSync(installed, 'utf8')) return 'in-sync';
+  if (pair.sameContent) return readFileSync(lock, 'utf8') === readFileSync(installed, 'utf8') ? 'in-sync' : 'stale';
   return statSync(lock).mtimeMs > statSync(installed).mtimeMs ? 'stale' : 'in-sync';
 }
 
