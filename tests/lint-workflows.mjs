@@ -53,7 +53,8 @@ function main() {
     for (const [name, content] of Object.entries(renderAll())) writeFileSync(join(work, '.github', 'workflows', name), content);
     spawnSync('git', ['init', '-q'], { cwd: work });
     writeFileSync(join(work, 'zizmor.yml'), 'rules:\n  unpinned-uses:\n    disable: true\n');
-    const actionlint = docker([ACTIONLINT_IMAGE, '-no-color', '-ignore', 'SC2034', '-ignore', 'label .* is unknown'], work);
+    const files = readdirSync(join(work, '.github', 'workflows')).map(name => `.github/workflows/${name}`);
+    const actionlint = docker([ACTIONLINT_IMAGE, '-no-color', '-ignore', 'SC2034', '-ignore', 'label .* is unknown', ...files], work);
     const zizmor = docker([ZIZMOR_IMAGE, '--format=plain', '--min-severity=low', '--offline', '--config', 'zizmor.yml', '.github/workflows'], work);
     process.stdout.write(`actionlint:\n${actionlint.stdout}${actionlint.stderr}\nzizmor:\n${zizmor.stdout}${zizmor.stderr}\n`);
     if (actionlint.status !== 0 || zizmor.status !== 0) process.exitCode = 1;
