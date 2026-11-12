@@ -402,6 +402,7 @@ export function run(argv, cwd = process.cwd()) {
 
 function runCommand(argv, cwd, root) {
   const [command, ...args] = argv;
+  if (!command || command === 'help' || command === '--help') return USAGE;
   if (command === 'templates') {
     const prefix = args[0] ?? '';
     return listFilesRecursively(TEMPLATES_DIR)

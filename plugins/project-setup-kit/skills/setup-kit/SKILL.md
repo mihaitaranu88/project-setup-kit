@@ -27,7 +27,7 @@ All paths are relative to this skill's folder.
 | `references/troubleshooting.md` | What to do when a command, tool, hook, CI run or repository setting fails. Read it on the first error. |
 | `references/guides/*.md` | Step-by-step guides shown when the user says yes to an item that needs external setup. |
 | `templates/**` | Files you copy into the project and adapt. Never copy blindly: adapt to the detected language, paths and answers. |
-| `scripts/kit.mjs` | The only way to change kit state: `install`/`record` files (hashes), `state`/`context`/`setting` in `.ai-kit.json`, `config add/set` sections of `.ai-kit/config.json`, `pending list/apply/clean`, `verify`, `templates`. It refuses tool-protected destinations. |
+| `scripts/kit.mjs` | The only way to change kit state: `install`/`record` files (hashes), `state`/`context`/`setting` in `.ai-kit.json`, `config add/set` sections of `.ai-kit/config.json`, `pending list/apply/clean`, `verify`, `templates`, `guard-test`, `pin-actions`, `outdated`, `uninstall-plan`. It refuses tool-protected destinations. Run `node <skill-dir>/scripts/kit.mjs` without arguments for the full usage. |
 
 ## Modes
 

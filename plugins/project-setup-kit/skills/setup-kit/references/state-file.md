@@ -4,7 +4,7 @@ Committed at the repo root. It is the kit's memory of this project: what was ask
 
 ```json
 {
-  "kitVersion": "0.4.0",
+  "kitVersion": "0.5.0",
   "updatedAt": "2026-11-10",
   "context": {
     "aiTools": ["claude", "copilot"],

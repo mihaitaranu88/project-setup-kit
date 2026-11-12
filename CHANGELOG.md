@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.5.0
+
+Tested end to end on real projects: the kit was run headless on a copy of a Next.js site and on a FastAPI app, each pushed to a throwaway private GitHub repository. The generated workflows then ran on GitHub Actions. Every job passed except `audit`, which correctly flagged a real advisory in `next`. The issues these runs found are fixed below.
+
+Update and maintenance:
+- `references/upgrades.md`: what changed in every version and what `/setup-kit update` offers for it. Update mode applies the sections newer than the project's `kitVersion`. A new eval case checks that a project set up with 0.3.0 is offered the 0.4.0 items and workflow fixes, and is not asked the questionnaire again.
+- `kit.mjs outdated` lists pinned actions, tool images (gitleaks, actionlint, zizmor, trivy, hadolint), npm, PyPI and Go tools, and MCP packages that have a newer release, and marks major changes. `doctor` and Phase 5 run it. A weekly workflow in the kit repo checks that the templates' own pins are current.
+- `/setup-kit remove --all` and `kit.mjs uninstall-plan <id>|--all`: a removal plan that separates files to delete, files the team changed (asked one by one), merged files (only the kit blocks are removed), files still used by another item, and repository settings to undo by hand.
+
+Languages:
+- CI templates for .NET, Ruby and Rust; Kotlin through the Gradle template.
+- Fixtures and detection evals for Rust, .NET, Ruby and Kotlin, 11 fixture projects in all. Every detection case passes.
+
+Dependency check (item 47):
+- RubyGems (`bundle add`, `gem install`, `Gemfile`) and NuGet (`dotnet add package`, `*.csproj`).
+- Download counts from pypistats.org, Packagist and crates.io.
+- Private registries are respected: project and user `.npmrc`, yarn `npmScopes`, pip and uv indexes, composer repositories, `NuGet.config`, Maven repositories, `GOPRIVATE` (also from `go env`), and `--registry`/`--index-url` flags.
+- An independent review found 13 false results, all fixed with regression tests:
+  - Go package paths are now resolved to their module;
+  - flag values and shell redirections are no longer read as package names;
+  - npm aliases, composer constraints and pnpm `-w` are read correctly;
+  - Poetry path and git dependencies, `include-group` entries, PEP 508 direct references, `jsr:` specs and sibling Maven modules are no longer flagged.
+
+Guards:
+- `npm run eval:guards` starts real Claude Code sessions in a project with the guards installed. Seven scenarios pass: commit and push, reading `.env`, `git clean -fdx`, `chmod -R 777`, `rm -rf ./*`, an invented npm package, and an edit that would remove the guards. The plugin eval harness does not load project hooks, so these run separately.
+- `guard-test` also checks deps-guard and that `.env.example` stays readable.
+
+Fixes from the end-to-end runs:
+- `bundle-size.yml` keeps the checkout token, because size-limit fetches the base branch itself and failed on private repositories. On the PR that adds size-limit, the base measurement fails once.
+- `pin-actions` handles Windows line endings and keeps trailing comment directives. Before, `--check` passed on a CRLF workflow that had no pins.
+- The stop check runs `verify --fast`, the steps marked `"fast": true`, instead of the whole verify.
+- `config add` no longer copies the template's `note` fields into the project config.
+- `pending list|apply` picks up only `*.pending` files.
+- The docs check explains links to git-ignored files.
+- Item 6 handles repositories that ignore `docs/`.
+- Remaining tool versions are pinned in the templates: govulncheck, deadcode, knip 6, jscpd 5, vulture, diff-cover, the license checker, and gitleaks 8.30.1.
+- The `AGENTS.md` template no longer has a stack block.
+- A race in the `.ai-kit.json` lock is fixed: a parallel command could fail when the lock disappeared between the check and the stat.
+
+New eval cases: a full `minimal` run that checks the files written and recorded, `update-from-0.3.0`, and the 4 new language fixtures.
+
 ## 0.4.0
 
 Five new items in a new group, **I. Supply chain and agent environments** (51 items in total):
