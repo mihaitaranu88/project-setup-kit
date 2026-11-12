@@ -10,6 +10,8 @@ python:
         persist-credentials: false
         fetch-depth: 0
     - uses: astral-sh/setup-uv@v10.3.3
+      with:
+        python-version: "{{PYTHON_VERSION}}"
     - run: uv sync --frozen
     - run: uv run ruff check .
     - run: uv run ruff format --check .
