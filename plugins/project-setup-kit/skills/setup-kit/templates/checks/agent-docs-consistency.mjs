@@ -42,15 +42,15 @@ export function toPendingPath(path) {
   return ['.ai-kit', 'pending', ...segments, `${last}.pending`].join('/');
 }
 
-function existsOrPending(root, target) {
+function existsOrPending(root, target, acceptPending) {
   if (existsSync(join(root, target))) return true;
-  if (isCi()) return false;
+  if (!acceptPending) return false;
   const pending = join(root, toPendingPath(target));
   const pendingDir = pending.replace(/\.pending$/, '');
   return existsSync(pending) || existsSync(pendingDir);
 }
 
-export function findBrokenReferences(root, file) {
+export function findBrokenReferences(root, file, { acceptPending = true } = {}) {
   const content = readFileSync(join(root, file), 'utf8');
   const fromFile = [...content.matchAll(MARKDOWN_LINK)]
     .map(match => match[1])
@@ -59,7 +59,7 @@ export function findBrokenReferences(root, file) {
   const fromRoot = [...content.matchAll(BACKTICK_PATH)].map(match => toPosix(normalize(match[1].replace(/[.,:;)]$/, ''))));
   return [...new Set([...fromFile, ...fromRoot])]
     .filter(target => !relative(root, join(root, target)).startsWith('..'))
-    .filter(target => !existsOrPending(root, target));
+    .filter(target => !existsOrPending(root, target, acceptPending));
 }
 
 function escapeRegex(value) {
@@ -74,7 +74,7 @@ export function isMentioned(text, entry) {
   return asCode.test(text) || asCommand.test(text) || asPath.test(text);
 }
 
-export function evaluateAgentDocs(root, settings) {
+export function evaluateAgentDocs(root, settings, { acceptPending = true } = {}) {
   const problems = [];
   const rosterText = (settings.roster ?? [])
     .filter(file => existsSync(join(root, file)))
@@ -93,7 +93,7 @@ export function evaluateAgentDocs(root, settings) {
     ...entries.flatMap(entry => entry.markdownFiles),
   ];
   for (const file of [...new Set(filesToCheck)]) {
-    const broken = findBrokenReferences(root, file);
+    const broken = findBrokenReferences(root, file, { acceptPending });
     const tracked = new Set(filterIgnored(root, broken));
     for (const target of broken) {
       problems.push(tracked.has(target) ? `${file} points to ${target}, which does not exist` : `${file} points to ${target}, which git ignores: it exists only on some machines, so teammates and CI agents cannot open it. Link a committed file instead, or say in plain words that it is a local file.`);
@@ -104,7 +104,7 @@ export function evaluateAgentDocs(root, settings) {
 
 function main() {
   const settings = loadKitConfig().agentDocs ?? { roster: ['AGENTS.md'], dirs: [], linkCheckFiles: ['AGENTS.md'] };
-  const problems = evaluateAgentDocs(REPO_ROOT, settings);
+  const problems = evaluateAgentDocs(REPO_ROOT, settings, { acceptPending: !isCi() });
   if (problems.length === 0) {
     process.stdout.write('Agent docs are consistent.\n');
     return;

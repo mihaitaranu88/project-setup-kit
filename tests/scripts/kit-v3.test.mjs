@@ -366,7 +366,9 @@ describe('fixes from the third end-to-end run', async () => {
     mkdirSync(join(root, '.ai-kit/pending/dot-claude/agents'), { recursive: true });
     writeFileSync(join(root, '.ai-kit/pending/dot-claude/agents/reviewer.md.pending'), '# reviewer');
     writeFileSync(join(root, 'AGENTS.md'), 'Reviewer: `.claude/agents/reviewer.md`.');
-    assert.deepEqual(evaluateAgentDocs(root, { roster: ['AGENTS.md'], dirs: ['.claude/agents'], linkCheckFiles: ['AGENTS.md'] }), []);
+    const settings = { roster: ['AGENTS.md'], dirs: ['.claude/agents'], linkCheckFiles: ['AGENTS.md'] };
+    assert.deepEqual(evaluateAgentDocs(root, settings, { acceptPending: true }), []);
+    assert.match(evaluateAgentDocs(root, settings, { acceptPending: false }).join('\n'), /points to \.claude\/agents\/reviewer\.md/);
   });
 });
 
