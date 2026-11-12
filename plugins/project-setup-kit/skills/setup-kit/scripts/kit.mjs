@@ -180,11 +180,17 @@ export function setSetting(state, { status, name }) {
   return { ...state, settings };
 }
 
+function withoutNotes(value) {
+  if (Array.isArray(value)) return value.map(withoutNotes);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'note').map(([key, entry]) => [key, withoutNotes(entry)]));
+}
+
 export function addConfigSections(config, defaults, sections) {
   const next = { ...config };
   for (const section of sections) {
     if (!(section in defaults)) throw new Error(`unknown config section "${section}", use one of: ${Object.keys(defaults).join(', ')}`);
-    if (!(section in next)) next[section] = defaults[section];
+    if (!(section in next)) next[section] = withoutNotes(defaults[section]);
   }
   return next;
 }
@@ -198,7 +204,7 @@ export function setConfigSection(config, section, values) {
 export function listPending(root) {
   const base = join(root, '.ai-kit', 'pending');
   if (!existsSync(base)) return [];
-  return listFilesRecursively(base).map(file => {
+  return listFilesRecursively(base).filter(file => file.endsWith('.pending')).map(file => {
     const pending = relative(root, file).split('\\').join('/');
     const target = fromPendingPath(pending);
     return { pending, target, copied: existsSync(join(root, target)) };
@@ -289,9 +295,12 @@ export const GUARD_SAMPLES = [
   { guard: 'protect-guard.mjs', tool: 'Edit', input: { file_path: 'src/index.ts' }, expect: 'allow' },
   { guard: 'env-guard.mjs', tool: 'Read', input: { file_path: '.env' }, expect: 'deny' },
   { guard: 'env-guard.mjs', tool: 'Bash', input: { command: 'cat .env.local' }, expect: 'deny' },
+  { guard: 'env-guard.mjs', tool: 'Read', input: { file_path: '.env.example' }, expect: 'allow' },
+  { guard: 'deps-guard.mjs', tool: 'Bash', input: { command: 'npm ci' }, expect: 'allow' },
+  { guard: 'deps-guard.mjs', tool: 'Bash', input: { command: 'npm install react' }, expect: 'allow' },
 ];
 
-const USES_LINE = /^(\s*-?\s*uses:\s*)(["']?)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)((?:\/[^@\s"']+)?)@([^\s"'#]+)\2(\s*#.*)?$/;
+const USES_LINE = /^(\s*-?\s*uses:\s*)(["']?)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)((?:\/[^@\s"']+)?)@([^\s"'#]+)\2(\s*#[^\r]*)?(\r?)$/;
 
 export function findUnpinnedActions(text) {
   return text.split('\n').flatMap((line, index) => {
@@ -325,7 +334,8 @@ export function pinWorkflowText(text, resolve = resolveActionSha) {
   const lines = text.split('\n').map(line => {
     const match = line.match(USES_LINE);
     if (!match || /^[0-9a-f]{40}$/.test(match[5])) return line;
-    const [, prefix, quote, repo, path, ref] = match;
+    const [, prefix, quote, repo, path, ref, comment = '', carriage = ''] = match;
+    const extra = comment.replace(/^\s*#\s*/, '').replace(new RegExp(`^${ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b\\s*`), '').trim();
     let sha = null;
     try {
       sha = resolve(repo, ref);
@@ -337,7 +347,7 @@ export function pinWorkflowText(text, resolve = resolveActionSha) {
       return line;
     }
     pinned.push(`${repo}${path}@${ref}`);
-    return `${prefix}${quote}${repo}${path}@${sha}${quote} # ${ref}`;
+    return `${prefix}${quote}${repo}${path}@${sha}${quote} # ${ref}${extra ? ` ${extra}` : ''}${carriage}`;
   });
   return { text: lines.join('\n'), pinned, failed };
 }

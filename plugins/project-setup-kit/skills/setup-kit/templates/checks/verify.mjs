@@ -4,8 +4,10 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REPO_ROOT, hasFlag, loadKitConfig, readArg } from './lib.mjs';
 
-export function selectSteps(settings, only) {
-  const steps = settings.steps ?? [];
+export function selectSteps(settings, only, fast = false) {
+  const all = settings.steps ?? [];
+  const steps = fast ? all.filter(step => step.fast === true) : all;
+  if (fast && steps.length === 0) return all;
   if (!only) return steps;
   const wanted = new Set(only.split(',').map(name => name.trim()));
   const unknown = [...wanted].filter(name => !steps.some(step => step.name === name));
@@ -38,7 +40,7 @@ function defaultRun(command, cwd) {
 
 function main() {
   const settings = loadKitConfig().verify ?? {};
-  const steps = selectSteps(settings, readArg('only'));
+  const steps = selectSteps(settings, readArg('only'), hasFlag('fast'));
   if (hasFlag('list')) {
     for (const step of steps) process.stdout.write(`${step.name}: ${step.run}${step.cwd ? ` (in ${step.cwd})` : ''}\n`);
     return;

@@ -75,6 +75,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - writes: `memory/README.md` → `docs/ai-memory/README.md`; `memory/_decision.md`, `memory/_lesson.md` → same folder; empty `decisions/`, `lessons/`, `debt/`, `incidents/` folders with a `.gitkeep`
 - rule: "Before large changes, read `docs/ai-memory/`. Propose a new entry (decision, lesson, debt, incident) when you learn something durable; never write one without approval. Every entry names its source."
 - notes: the questionnaire's general best-practice answers (category "Project facts") are written here; the checkable ones also go to item 2.
+- notes: if `.gitignore` ignores `docs/` (or the folder chosen for memory), the memory would never be committed: change the rule to `docs/*` plus `!docs/ai-memory/` and show the diff, or pick a folder that is not ignored.
 
 ### 7 · Plan before code for large tasks
 - applies-when: always
@@ -398,7 +399,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - detect: a `verify`/`check`/`ci` script in the manifest, `make check`, `just check`, `task check`
 - recommend: yes — agents follow one clear instruction ("run verify before you say done") better than a list, and local, pre-push, stop hook and CI stop drifting apart.
 - sub-questions: the steps (default: lint, type-check, tests, build as CI runs them; slow e2e tests stay CI-only); expose it as `npm run verify` / `composer verify` / `make verify` (default: the project's own task runner)
-- writes: `checks/verify.mjs` → `.ai-kit/scripts/`; `verify` in `.ai-kit/config.json`; the task-runner alias (`"verify": "node .ai-kit/scripts/verify.mjs"`); when item 36 is installed, its stop check runs `verify --bail`; when item 21 is installed, offer to replace the CI job's separate steps by one `node .ai-kit/scripts/verify.mjs` step
+- writes: `checks/verify.mjs` → `.ai-kit/scripts/`; `verify` in `.ai-kit/config.json`; the task-runner alias (`"verify": "node .ai-kit/scripts/verify.mjs"`); when item 36 is installed, its stop check runs `verify --fast` (the steps marked `"fast": true`, usually lint and type-check; leave the build and slow tests to pre-push and CI so every stop stays quick); when item 21 is installed, offer to replace the CI job's separate steps by one `node .ai-kit/scripts/verify.mjs` step
 - rule: "Before saying a task is done, run `<verify command>` and fix what fails. Do not skip, disable or weaken a check to make it pass."
 
 ### 51 · Container and infrastructure scanning

@@ -92,7 +92,11 @@ export function evaluateAgentDocs(root, settings) {
     ...entries.flatMap(entry => entry.markdownFiles),
   ];
   for (const file of [...new Set(filesToCheck)]) {
-    for (const target of findBrokenReferences(root, file)) problems.push(`${file} points to ${target}, which does not exist`);
+    const broken = findBrokenReferences(root, file);
+    const tracked = new Set(filterIgnored(root, broken));
+    for (const target of broken) {
+      problems.push(tracked.has(target) ? `${file} points to ${target}, which does not exist` : `${file} points to ${target}, which git ignores: it exists only on some machines, so teammates and CI agents cannot open it. Link a committed file instead, or say in plain words that it is a local file.`);
+    }
   }
   return problems;
 }

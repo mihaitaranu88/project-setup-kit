@@ -37,12 +37,21 @@ function quotedStrings(text) {
 }
 
 function pythonRequirementName(requirement) {
-  const match = requirement.trim().match(/^([A-Za-z0-9][A-Za-z0-9._-]*)/);
-  return match && !/^(?:https?|git|file):/i.test(requirement) ? match[1].toLowerCase().replace(/_/g, '-') : null;
+  const text = requirement.trim();
+  if (/^[a-z][a-z0-9+.-]*:/i.test(text) || /^[^;]*\s@\s/.test(text) || /^[A-Za-z0-9._-]+\s*@\s*[a-z][a-z0-9+.-]*:\/\//i.test(text)) return null;
+  const match = text.match(/^([A-Za-z0-9][A-Za-z0-9._-]*)/);
+  return match ? match[1].toLowerCase().replace(/_/g, '-') : null;
+}
+
+function withoutInlineTables(text) {
+  return text.replace(/\{[^{}]*\}/g, '');
 }
 
 function tableKeys(lines) {
-  return lines.map(line => line.match(/^\s*([A-Za-z0-9_.-]+)\s*=/)).filter(Boolean).map(match => match[1]);
+  return lines
+    .map(line => line.match(/^\s*([A-Za-z0-9_.-]+)\s*=\s*(.*)$/))
+    .filter(match => match && !/\b(?:path|git|url|develop)\s*=/.test(match[2]))
+    .map(match => match[1]);
 }
 
 function arrayBody(lines, key) {
@@ -75,7 +84,7 @@ export const MANIFESTS = [
       for (const field of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
         for (const [name, spec] of Object.entries(manifest[field] ?? {})) {
           const value = String(spec);
-          if (/^(?:workspace|file|link|portal|git|git\+\w+|github|https?):/.test(value) || value.startsWith('.') || value.startsWith('/')) continue;
+          if (/^(?:workspace|file|link|portal|git|git\+\w+|github|gitlab|bitbucket|https?|jsr|catalog):/.test(value) || value.startsWith('.') || value.startsWith('/')) continue;
           const alias = value.match(/^npm:((?:@[^/@]+\/)?[^@]+)/);
           names.push(alias ? alias[1] : name);
         }
@@ -91,7 +100,7 @@ export const MANIFESTS = [
       const names = [];
       for (const [section, lines] of sections) {
         if (section === 'project') names.push(...quotedStrings(arrayBody(lines, 'dependencies')).map(pythonRequirementName));
-        if (section === 'project.optional-dependencies' || section === 'dependency-groups') names.push(...quotedStrings(lines.join('\n')).map(pythonRequirementName));
+        if (section === 'project.optional-dependencies' || section === 'dependency-groups') names.push(...quotedStrings(withoutInlineTables(lines.join('\n'))).map(pythonRequirementName));
         if (/^tool\.poetry\.(?:group\.[^.]+\.)?(?:dev-)?dependencies$/.test(section)) names.push(...tableKeys(lines).map(key => key.toLowerCase()));
       }
       return names.filter(name => name && name !== 'python');
@@ -154,10 +163,14 @@ export const MANIFESTS = [
     ecosystem: 'maven',
     parse(text) {
       const names = [];
+      const withoutDependencies = text.replace(/<dependencies>[\s\S]*?<\/dependencies>|<dependencyManagement>[\s\S]*?<\/dependencyManagement>|<build>[\s\S]*?<\/build>/g, '');
+      const ownGroups = [...withoutDependencies.matchAll(/<groupId>\s*([^<\s]+)\s*<\/groupId>/g)].map(match => match[1]);
       for (const match of text.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g)) {
         const group = match[1].match(/<groupId>\s*([^<\s]+)\s*<\/groupId>/)?.[1];
         const artifact = match[1].match(/<artifactId>\s*([^<\s]+)\s*<\/artifactId>/)?.[1];
-        if (group && artifact && !group.includes('${') && !artifact.includes('${')) names.push(`${group}:${artifact}`);
+        if (!group || !artifact || group.includes('${') || artifact.includes('${')) continue;
+        if (ownGroups.some(own => group === own || group.startsWith(`${own}.`))) continue;
+        names.push(`${group}:${artifact}`);
       }
       return names;
     },

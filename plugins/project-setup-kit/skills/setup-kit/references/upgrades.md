@@ -52,3 +52,8 @@ When every section is done, record the new version: any `kit.mjs` write command 
 - Item 21: new CI fragments for .NET (`ci.dotnet.yml`), Ruby (`ci.ruby.yml`) and Rust (`ci.rust.yml`). If the project has one of these parts and its CI job was written by hand from `languages.md`, offer the template version as a diff.
 - `doctor` and Phase 5 now run `kit.mjs outdated`. Run it once in update mode and offer the results as in Phase 5.
 - `/setup-kit remove --all` and `kit.mjs uninstall-plan` exist; mention them once.
+- Item 1: the `AGENTS.md` template no longer has a `stack` block, because the manifests already show the stack. If the project's `AGENTS.md` has `<!-- ai-kit:begin stack -->`, offer to remove that block. Show the lines first: keep anything in it that the code does not show, such as a version pinned on purpose, and move it to the `rules` block.
+- Item 36 and item 50: the stop check runs `verify --fast`, which runs only the steps marked `"fast": true` (lint and type-check), so stopping does not wait for a build. Offer to mark the fast steps in `verify` and to switch `stopCheck` from `verify --bail` to `verify --fast`.
+- `kit.mjs config add` no longer copies the template's `note` fields into the project's `.ai-kit/config.json`. Offer to delete the `note` keys left there by older versions.
+- `kit.mjs pending list|apply` only picks up `*.pending` files.
+- `bundle-size.yml` keeps the checkout token (`persist-credentials: true`), because size-limit fetches the base branch itself; without it, private repositories fail. If the project's copy has `persist-credentials: false`, offer this fix first.

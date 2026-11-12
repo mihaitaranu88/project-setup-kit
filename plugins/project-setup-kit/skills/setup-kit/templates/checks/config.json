@@ -222,11 +222,13 @@
     "steps": [
       {
         "name": "lint",
-        "run": "npm run lint"
+        "run": "npm run lint",
+        "fast": true
       },
       {
         "name": "types",
-        "run": "npm run typecheck"
+        "run": "npm run typecheck",
+        "fast": true
       },
       {
         "name": "test",

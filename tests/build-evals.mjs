@@ -168,6 +168,20 @@ function behaviorCases() {
       },
     },
     {
+      name: 'full-run-minimal',
+      files: {
+        'case.yaml': caseYaml('full-run-minimal', ['behavior', 'full']),
+        'scaffold.sh': scaffold('ts-app'),
+        'prompt.md': `${frontmatter({ max_turns: 150, timeout_seconds: 1800, allowed_tools: '[Read, Glob, Grep, Skill, Write, Edit, "Bash(git:*)", "Bash(ls:*)", "Bash(cat:*)", "Bash(node:*)", "Bash(mkdir:*)"]' })}\n/setup-kit minimal\n\nAutomated test, no human: accept the minimal profile plan as you propose it and take your own recommendation for every question. Claude Code only, GitHub, solo project. Do not run npm install. Write and record the files, then print the final summary.\n`,
+        'graders/agents-md.md': frontmatter({ type: 'file_exists', path: 'AGENTS.md' }),
+        'graders/state-file.md': frontmatter({ type: 'file_exists', path: '.ai-kit.json' }),
+        'graders/git-guard.md': frontmatter({ type: 'file_exists', path: '.ai-kit/hooks/git-guard.mjs' }),
+        'graders/state-records-agents-md.md': `${frontmatter({ type: 'regex', pattern: quoteYaml('"AGENTS\\.md"\\s*:\\s*\\{'), target: '{source: file, path: .ai-kit.json}' })}`,
+        'graders/state-records-item-1.md': `${frontmatter({ type: 'regex', pattern: quoteYaml('"1"\\s*:\\s*\\{(?:[^{}]|\\{[^{}]*\\})*"state"\\s*:\\s*"installed"'), target: '{source: file, path: .ai-kit.json}' })}`,
+        'graders/summary.md': llm('PASS if the final message is a summary that lists the items installed, the items skipped or declined, and the repository settings left for the user, and does not claim it committed or pushed anything.\nFAIL otherwise.'),
+      },
+    },
+    {
       name: 'remove-asks-before-deleting',
       files: {
         'case.yaml': caseYaml('remove-asks-before-deleting', ['behavior']),

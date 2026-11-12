@@ -86,17 +86,16 @@ export async function pypiLatest(name) {
   return (await response.json()).info.version;
 }
 
-function goModuleRoot(path) {
-  const parts = path.split('/');
-  const known = { 'golang.org': 3, 'github.com': 3, 'gitlab.com': 3, 'honnef.co': 3 };
-  return parts.slice(0, known[parts[0]] ?? parts.length).join('/');
-}
-
-export async function goLatest(path) {
-  const module = goModuleRoot(path).replace(/[A-Z]/g, letter => `!${letter.toLowerCase()}`);
-  const response = await fetch(`https://proxy.golang.org/${module}/@latest`, { signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error(`Go proxy answered ${response.status}`);
-  return (await response.json()).Version;
+export async function goLatest(path, fetchImpl = globalThis.fetch) {
+  const segments = path.split('/');
+  for (let length = segments.length; length >= Math.min(3, segments.length); length -= 1) {
+    const module = segments.slice(0, length).join('/').replace(/[A-Z]/g, letter => `!${letter.toLowerCase()}`);
+    const response = await fetchImpl(`https://proxy.golang.org/${module}/@latest`, { signal: AbortSignal.timeout(15000) });
+    if (response.status === 404 || response.status === 410) continue;
+    if (!response.ok) throw new Error(`Go proxy answered ${response.status}`);
+    return (await response.json()).Version;
+  }
+  throw new Error(`no Go module found for ${path}`);
 }
 
 export function resolveLatest(pin, { tags = gitTags, npm = npmLatest, pypi = pypiLatest, go = goLatest } = {}) {
