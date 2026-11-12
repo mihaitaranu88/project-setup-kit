@@ -77,6 +77,14 @@ const LOCK_WAIT_MS = 50;
 const LOCK_TIMEOUT_MS = 10000;
 const STALE_LOCK_MS = 60000;
 
+function lockAge(lockPath) {
+  try {
+    return Date.now() - statSync(lockPath).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
+
 export function withStateLock(root, action) {
   const lockPath = join(root, `${STATE_FILE}.lock`);
   const started = Date.now();
@@ -85,8 +93,8 @@ export function withStateLock(root, action) {
     try {
       handle = openSync(lockPath, 'wx');
     } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-      if (existsSync(lockPath) && Date.now() - statSync(lockPath).mtimeMs > STALE_LOCK_MS) rmSync(lockPath, { force: true });
+      if (!['EEXIST', 'EPERM', 'EBUSY'].includes(error.code)) throw error;
+      if (lockAge(lockPath) > STALE_LOCK_MS) rmSync(lockPath, { force: true });
       if (Date.now() - started > LOCK_TIMEOUT_MS) throw new Error(`${STATE_FILE} is locked by another kit command; try again`);
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, LOCK_WAIT_MS);
     }
