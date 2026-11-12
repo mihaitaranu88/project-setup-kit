@@ -30,16 +30,16 @@ cat > .ai-kit.json <<'JSON'
       ]
     },
     "2": {
-      "state": "installed"
+      "state": "declined"
     },
     "3": {
-      "state": "installed"
+      "state": "declined"
     },
     "4": {
       "state": "declined"
     },
     "5": {
-      "state": "installed"
+      "state": "declined"
     },
     "6": {
       "state": "declined"
@@ -48,40 +48,40 @@ cat > .ai-kit.json <<'JSON'
       "state": "declined"
     },
     "8": {
-      "state": "installed"
+      "state": "declined"
     },
     "9": {
-      "state": "installed"
+      "state": "declined"
     },
     "10": {
-      "state": "installed"
+      "state": "declined"
     },
     "11": {
-      "state": "installed"
+      "state": "declined"
     },
     "12": {
       "state": "declined"
     },
     "13": {
-      "state": "installed"
+      "state": "declined"
     },
     "14": {
-      "state": "installed"
+      "state": "declined"
     },
     "15": {
-      "state": "installed"
+      "state": "declined"
     },
     "16": {
-      "state": "installed"
+      "state": "declined"
     },
     "17": {
       "state": "declined"
     },
     "18": {
-      "state": "installed"
+      "state": "declined"
     },
     "19": {
-      "state": "installed"
+      "state": "declined"
     },
     "20": {
       "state": "not-applicable"
@@ -102,19 +102,19 @@ cat > .ai-kit.json <<'JSON'
       "state": "declined"
     },
     "25": {
-      "state": "installed"
+      "state": "declined"
     },
     "26": {
       "state": "declined"
     },
     "27": {
-      "state": "installed"
+      "state": "declined"
     },
     "28": {
-      "state": "installed"
+      "state": "declined"
     },
     "29": {
-      "state": "installed"
+      "state": "declined"
     },
     "30": {
       "state": "declined"
@@ -141,13 +141,13 @@ cat > .ai-kit.json <<'JSON'
       "state": "declined"
     },
     "38": {
-      "state": "installed"
+      "state": "declined"
     },
     "39": {
-      "state": "installed"
+      "state": "declined"
     },
     "40": {
-      "state": "installed"
+      "state": "declined"
     },
     "41": {
       "state": "declined"

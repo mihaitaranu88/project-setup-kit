@@ -61,3 +61,7 @@ Each item lists its paths in `items.<id>.files`. The top-level `files` map holds
 ## Session notice
 
 With the Claude Code plugin, a `SessionStart` hook reads `.ai-kit.json` when a session starts and tells the user, in one or two lines, when the installed kit is newer than `kitVersion` or when files wait in `.ai-kit/pending/`. It never changes anything and says nothing for projects without `.ai-kit.json`. Set `"settings": { "sessionNotice": false }` to turn it off for a project.
+
+## Pending files
+
+Files staged in `.ai-kit/pending/` (tool-protected paths in a headless or refused run) are not recorded in `files` until they are in place: `kit.mjs pending apply` copies them, and the next `kit.mjs record <path> --item <id>` records them. Keep the item's state `partial` with the note "files pending" until then, so `status` and `update` show it.

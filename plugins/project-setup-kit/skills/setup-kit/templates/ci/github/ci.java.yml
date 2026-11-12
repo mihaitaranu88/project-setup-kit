@@ -8,6 +8,7 @@ java:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - uses: actions/setup-java@v6
       with:
         distribution: temurin
@@ -24,3 +25,8 @@ java:
       uses: gradle/actions/dependency-submission@v6
       with:
         build-root-directory: "{{PART_PATH}}"
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

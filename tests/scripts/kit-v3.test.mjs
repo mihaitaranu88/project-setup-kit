@@ -145,6 +145,14 @@ describe('precheck diff checks', () => {
     assert.equal(findings[0].check, 'newSourceWithoutTest');
   });
 
+  it('should apply the default test rule to Python, Go and PHP layouts', () => {
+    assert.equal(runDiffChecks(['app/orders.py'], ['app/orders.py'], settings)[0]?.check, 'newSourceWithoutTest');
+    assert.deepEqual(runDiffChecks(['app/orders.py', 'tests/test_orders.py'], ['app/orders.py', 'tests/test_orders.py'], settings), []);
+    assert.deepEqual(runDiffChecks(['internal/order/order.go', 'internal/order/order_test.go'], ['internal/order/order.go', 'internal/order/order_test.go'], settings), []);
+    assert.deepEqual(runDiffChecks(['app/__init__.py', 'migrations/versions/1_init.py'], ['app/__init__.py', 'migrations/versions/1_init.py'], settings), []);
+    assert.deepEqual(runDiffChecks(['src/Order.php', 'tests/OrderTest.php'], ['src/Order.php', 'tests/OrderTest.php'], settings), []);
+  });
+
   it('should not warn when the change also touches a test', () => {
     assert.deepEqual(runDiffChecks(['src/new.ts', 'src/new.test.ts'], ['src/new.ts', 'src/new.test.ts'], settings), []);
   });

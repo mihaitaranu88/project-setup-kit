@@ -169,7 +169,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 ### 19 · Lockfile drift warning on push
 - applies-when: a part whose package manager installs dependencies into a project folder that can fall behind the lockfile — `node_modules/` (npm, pnpm, yarn, bun), a virtualenv (uv, poetry, pipenv), `vendor/` (composer, bundler). Not applicable to Go, Maven, Gradle, Cargo or .NET, which resolve dependencies from a shared cache on every build. The lockfile does not have to exist yet: when the ecosystem fits but no lockfile is committed, the item applies and the recommendation is to commit the lockfile first (there is nothing to compare until then).
 - recommend: yes, as a warning — tests with stale dependencies give false results.
-- writes: `checks/lockfile-check.mjs` → `.ai-kit/scripts/`; pre-push hook entry (pnpm marker: `node_modules/.pnpm/lock.yaml`)
+- writes: `checks/lockfile-check.mjs` → `.ai-kit/scripts/`; `lockfiles` in `.ai-kit/config.json` (keep only the entries for this project's package managers); pre-push hook entry. Node and composer compare the lockfile with the installed copy (pnpm marker: `node_modules/.pnpm/lock.yaml`); uv runs `uv sync --check`, bundler `bundle check`; poetry and pipenv compare with the in-project `.venv` (only when the venv is in the project folder: `poetry config virtualenvs.in-project true`).
 - notes: warning only, never blocks.
 
 ### 20 · Environment variables validated at startup
@@ -179,6 +179,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - writes: guidance + code in the project's language from `env-validation/README.md`; keep `.env.example` in sync
 - rule: "Every new environment variable is added to the env schema and to `<env example file>`."
 - notes: validate at production build/start, not in development, when the app already handles missing variables in dev on purpose (e.g. a setup screen); keep whatever comments the project's example file uses — the no-comments rule applies to code, not to env example files.
+- notes: when the project has no env example file, create `.env.example` with every variable the code or framework config reads, no values (or obviously fake ones), one line each; it is what the rule above, item 5 and item 49 refer to. Never copy values from a real `.env`.
 
 ## D. CI on pull requests
 
@@ -337,6 +338,7 @@ Files the AI tool itself protects (Claude Code asks before writing `.claude/**`,
 - recommend: yes — nobody migrates the shared database by mistake.
 - sub-questions: env variables holding the DB host (detected); local hosts (default localhost, 127.0.0.1, ::1, host.docker.internal, compose service names); override variable (default `ALLOW_REMOTE_DB=1`)
 - writes: `checks/guard-remote-db.mjs` → `.ai-kit/scripts/`; wired before migrate/reset/seed commands (npm `pre*` scripts, Makefile, composer scripts, wrapper)
+- notes: the guard wraps the project's migrate command. If there is none yet (a migrations folder but no script, Makefile target or documented command), record the item as `pending` with the note "no migrate command" instead of writing a guard with nothing to protect, and add a `TODO:` line in `AGENTS.md`.
 
 ### 43 · Migration checks in CI
 - applies-when: DB + migrations

@@ -306,6 +306,7 @@ export const GUARD_SAMPLES = [
   { guard: 'env-guard.mjs', tool: 'Read', input: { file_path: '.env.example' }, expect: 'allow' },
   { guard: 'deps-guard.mjs', tool: 'Bash', input: { command: 'npm ci' }, expect: 'allow' },
   { guard: 'deps-guard.mjs', tool: 'Bash', input: { command: 'npm install react' }, expect: 'allow' },
+  { guard: 'deps-guard.mjs', tool: 'Bash', input: { command: 'pip install requests' }, expect: 'allow' },
 ];
 
 const USES_LINE = /^(\s*-?\s*uses:\s*)(["']?)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)((?:\/[^@\s"']+)?)@([^\s"'#]+)\2(\s*#[^\r]*)?(\r?)$/;

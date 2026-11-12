@@ -95,8 +95,8 @@ const HASH_FILES = `node -e 'const fs=require("fs"),c=require("crypto");const s=
 const INSTALLED = `cat > .ai-kit.json <<'JSON'\n${STATE}\nJSON\nmkdir -p .github/workflows\nprintf 'name: CI\\non: pull_request\\njobs:\\n  test:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - uses: actions/checkout@v4\\n' > .github/workflows/ci.yml\nprintf '# Rules\\n' > AGENTS.md\nprintf '@AGENTS.md\\n' > CLAUDE.md\nnode -e 'const fs=require("fs"),c=require("crypto");const s=JSON.parse(fs.readFileSync(".ai-kit.json","utf8"));for(const f of Object.keys(s.files)){if(s.files[f].hash!=="merged")s.files[f].hash="sha256:"+c.createHash("sha256").update(fs.readFileSync(f)).digest("hex");}fs.writeFileSync(".ai-kit.json",JSON.stringify(s,null,2)+"\\n")'\ngit add -A\ngit -c user.email=eval@example.invalid -c user.name=kit-eval commit -q -m kit\n`;
 
 const OLD_STATES = {
-  installed: [1, 2, 3, 5, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 21, 25, 27, 28, 29, 38, 39, 40],
-  declined: [4, 6, 7, 12, 17, 22, 23, 24, 26, 30, 31, 32, 33, 34, 35, 36, 37, 41, 46],
+  installed: [1, 21],
+  declined: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 46],
   'not-applicable': [20, 42, 43, 44, 45],
 };
 
@@ -164,7 +164,7 @@ function behaviorCases() {
         'prompt.md': `${frontmatter({ max_turns: 40, timeout_seconds: 900, allowed_tools: ALLOWED_TOOLS })}\n/setup-kit update\n`,
         'graders/nothing-written.md': NOTHING_WRITTEN,
         'graders/workflow-untouched.md': `${frontmatter({ type: 'regex', pattern: quoteYaml('actions/checkout@v4'), target: '{source: file, path: .github/workflows/ci.yml}' })}`,
-        'graders/offers-the-upgrade.md': llm('The project was set up with kit 0.3.0 and every one of items 1–46 already has an answer in .ai-kit.json.\nPASS if the final message (1) treats this as an update from 0.3.0, (2) names at least two of the items added in 0.4.0 (new-dependency check, GitHub Actions hardening, cloud agent environment, one verify command, container scanning), (3) mentions an update for the existing CI workflow (newer action versions or its security fixes such as persist-credentials), and (4) asks the user before changing anything.\nFAIL if it starts the questionnaire again, asks about items that already have an answer as if they were new, or says it already changed files.'),
+        'graders/offers-the-upgrade.md': llm('The project was set up with kit 0.3.0; items 1 and 21 are installed and every other item already has an answer in .ai-kit.json.\nPASS if the final message (1) treats this as an update from 0.3.0 to a newer kit, (2) proposes at least one concrete change from the newer versions: either an update to the existing CI workflow (newer action versions or security fixes such as persist-credentials) or one of the items added in 0.4.0 (new-dependency check, GitHub Actions hardening, cloud agent environment, one verify command, container scanning), and (3) asks the user before changing anything. Presenting one change at a time is correct.\nFAIL if it starts the questionnaire again, re-asks items that already have an answer as if they were new, or says it already changed files.'),
       },
     },
     {

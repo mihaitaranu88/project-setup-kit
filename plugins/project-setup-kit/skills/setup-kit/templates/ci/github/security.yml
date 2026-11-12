@@ -35,6 +35,8 @@ jobs:
         if: "{{IS_NODE}}"
         with:
           node-version: "{{NODE_VERSION}}"
+      - uses: astral-sh/setup-uv@v10.3.3
+        if: "{{IS_UV}}"
       - name: Known vulnerabilities (high and critical)
         run: "{{AUDIT_COMMAND}}"
 

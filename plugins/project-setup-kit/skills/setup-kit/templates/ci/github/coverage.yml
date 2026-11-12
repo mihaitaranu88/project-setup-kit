@@ -14,13 +14,19 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+        if: "{{USES_PNPM}}"
+      - uses: actions/setup-node@v7
+        if: "{{IS_NODE}}"
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+      - uses: astral-sh/setup-uv@v10.3.3
+        if: "{{IS_UV}}"
+      - run: "{{INSTALL_COMMAND}}"
       - name: Tests with coverage (lcov or cobertura XML)
         run: "{{TEST_WITH_COVERAGE_COMMAND}}"
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - run: pip install diff-cover==11.0.1
       - name: Coverage of changed lines
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: diff-cover "{{COVERAGE_REPORT_PATH}}" --compare-branch="origin/$BASE_REF" --fail-under={{COVERAGE_THRESHOLD}}
+        run: pipx run diff-cover==11.0.1 "{{COVERAGE_REPORT_PATH}}" --compare-branch="origin/$BASE_REF" --fail-under={{COVERAGE_THRESHOLD}}

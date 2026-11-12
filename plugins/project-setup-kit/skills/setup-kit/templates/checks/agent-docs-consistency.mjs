@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { basename, dirname, extname, join, normalize, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { REPO_ROOT, annotate, loadKitConfig } from './lib.mjs';
+import { REPO_ROOT, annotate, isCi, loadKitConfig } from './lib.mjs';
 
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)/g;
 const BACKTICK_PATH = /`((?:\.claude|\.github|\.cursor|\.ai-kit|docs)\/[^`\s*{}<>]+)`/g;
@@ -44,6 +44,7 @@ export function toPendingPath(path) {
 
 function existsOrPending(root, target) {
   if (existsSync(join(root, target))) return true;
+  if (isCi()) return false;
   const pending = join(root, toPendingPath(target));
   const pendingDir = pending.replace(/\.pending$/, '');
   return existsSync(pending) || existsSync(pendingDir);

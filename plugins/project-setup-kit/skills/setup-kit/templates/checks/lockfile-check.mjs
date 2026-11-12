@@ -1,12 +1,20 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REPO_ROOT, loadKitConfig } from './lib.mjs';
 
-export function classifyInstall(root, pair) {
+function runCheck(root, command) {
+  const result = spawnSync(command, { cwd: root, shell: true, stdio: 'ignore', timeout: 30000 });
+  if (result.error || result.status === 127 || result.status === null) return 'unknown';
+  return result.status === 0 ? 'in-sync' : 'stale';
+}
+
+export function classifyInstall(root, pair, check = runCheck) {
   const lock = join(root, pair.lock);
-  const installed = join(root, pair.installed);
   if (!existsSync(lock)) return 'no-lockfile';
+  if (pair.check) return check(root, pair.check);
+  const installed = join(root, pair.installed);
   if (!existsSync(installed)) return 'not-installed';
   if (pair.sameContent) return readFileSync(lock, 'utf8') === readFileSync(installed, 'utf8') ? 'in-sync' : 'stale';
   return statSync(lock).mtimeMs > statSync(installed).mtimeMs ? 'stale' : 'in-sync';

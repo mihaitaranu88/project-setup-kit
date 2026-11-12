@@ -8,6 +8,7 @@ dotnet:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - uses: actions/setup-dotnet@v6
       with:
         global-json-file: "{{PART_PATH}}/global.json"
@@ -16,3 +17,8 @@ dotnet:
     - run: dotnet build --no-restore -warnaserror
     - run: dotnet test --no-build --verbosity normal
     - run: dotnet list package --vulnerable --include-transitive
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

@@ -8,6 +8,7 @@ rust:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - run: rustup toolchain install stable --profile minimal --component clippy,rustfmt
     - uses: Swatinem/rust-cache@v2
       with:
@@ -16,3 +17,8 @@ rust:
     - run: cargo clippy --all-targets --locked -- -D warnings
     - run: cargo test --locked
     - run: cargo build --locked
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

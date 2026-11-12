@@ -8,6 +8,7 @@ ruby:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - uses: ruby/setup-ruby@v1
       with:
         working-directory: "{{PART_PATH}}"
@@ -15,3 +16,8 @@ ruby:
     - run: bundle exec rubocop
     - run: "{{TEST_COMMAND}}"
     - run: bundle exec bundler-audit check --update
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

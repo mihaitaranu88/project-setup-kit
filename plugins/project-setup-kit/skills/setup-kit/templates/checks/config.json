@@ -171,6 +171,26 @@
       "lock": "composer.lock",
       "installed": "vendor/composer/installed.json",
       "fix": "composer install"
+    },
+    {
+      "lock": "uv.lock",
+      "check": "uv sync --check --quiet",
+      "fix": "uv sync --frozen"
+    },
+    {
+      "lock": "poetry.lock",
+      "installed": ".venv",
+      "fix": "poetry install --sync"
+    },
+    {
+      "lock": "Pipfile.lock",
+      "installed": ".venv",
+      "fix": "pipenv sync --dev"
+    },
+    {
+      "lock": "Gemfile.lock",
+      "check": "bundle check",
+      "fix": "bundle install"
     }
   ],
   "dbGuard": {

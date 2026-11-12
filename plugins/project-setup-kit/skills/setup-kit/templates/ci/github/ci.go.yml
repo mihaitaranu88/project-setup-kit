@@ -8,6 +8,7 @@ go:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - uses: actions/setup-go@v7
       with:
         go-version-file: "{{PART_PATH}}/go.mod"
@@ -22,3 +23,8 @@ go:
       if: "{{ITEM_24}}"
       continue-on-error: true
       run: go run golang.org/x/tools/cmd/deadcode@v0.52.0 ./...
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

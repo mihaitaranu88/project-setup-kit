@@ -23,12 +23,12 @@ node:
     - run: "{{BUILD_COMMAND}}"
       env:
         "{{BUILD_ENV_PLACEHOLDERS}}": "{{FAKE_VALUE}}"
-    - name: Precheck on the PR diff
-      if: github.event_name == 'pull_request'
-      env:
-        BASE_REF: ${{ github.base_ref }}
-      run: node .ai-kit/scripts/precheck.mjs --base "origin/$BASE_REF"
     - name: Dead code (warning)
       if: "{{ITEM_24}}"
       continue-on-error: true
       run: npx --yes knip@6.45.1 --no-exit-code
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

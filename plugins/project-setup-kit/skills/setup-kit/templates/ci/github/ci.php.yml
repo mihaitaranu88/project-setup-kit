@@ -8,6 +8,7 @@ php:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
+        fetch-depth: 0
     - uses: shivammathur/setup-php@v2
       with:
         php-version: "{{PHP_VERSION}}"
@@ -17,3 +18,8 @@ php:
     - run: vendor/bin/phpstan analyse --no-progress
     - run: "{{TEST_COMMAND}}"
     - run: composer audit
+    - name: Precheck on the PR diff
+      if: github.event_name == 'pull_request'
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs" --base "origin/$BASE_REF"

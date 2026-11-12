@@ -61,9 +61,9 @@ export const DEFAULT_PRECHECK = {
   diffChecks: {
     newSourceWithoutTest: {
       level: 'warning',
-      source: '^(src|app|lib|convex)/.*\\.[cm]?[jt]sx?$',
-      exclude: '\\.(test|spec)\\.|\\.d\\.ts$|(^|/)(_generated|types?)/|(^|/)(page|layout|loading|error|not-found)\\.[jt]sx?$',
-      tests: '\\.(test|spec)\\.[cm]?[jt]sx?$|(^|/)__tests__/',
+      source: '^(?:.+/)?(src|app|lib|convex|internal|pkg)/.*\\.(?:[cm]?[jt]sx?|py|php|go|rb|java|kt|cs)$',
+      exclude: '\\.(test|spec)\\.|_test\\.go$|\\.d\\.ts$|(^|/)(_generated|types?|migrations?|__init__\\.py)(/|$)|(^|/)(page|layout|loading|error|not-found)\\.[jt]sx?$|(^|/)(tests?|spec|__tests__)/',
+      tests: '\\.(test|spec)\\.[cm]?[jt]sx?$|(^|/)__tests__/|(^|/)tests?/.*\\.py$|(^|/)test_[^/]*\\.py$|_test\\.(py|go)$|Tests?\\.(php|java|kt|cs)$|_spec\\.rb$|(^|/)spec/|(^|/)tests/.*\\.rs$',
       message: 'New source files without any test file in this change.',
     },
     toolingWithoutDocs: {

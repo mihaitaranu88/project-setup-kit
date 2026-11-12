@@ -27,6 +27,7 @@ You may fix on your own, without asking, only mistakes the kit itself just intro
 | Symptom | Check | Options |
 |---|---|---|
 | `node` missing or older than 20 | `node --version` | Install hint for the OS (`brew install node`, `winget install OpenJS.NodeJS.LTS`, `nvm install 22`); port the needed scripts to the project's language; or skip the items that need them |
+| Every kit command asks for approval, or shell variables, `bash script.sh` and `cmd1 && cmd2` are refused | the tool's permission settings | Ask the user once to allow `node <skill-dir>/scripts/kit.mjs` (and the project's own check commands). Run one plain command per call, without `&&`, pipes or shell variables, and pass paths as arguments. Never write wrapper scripts to get around a refused command, and never ask for blanket shell access |
 | `gh` missing or not logged in | `gh --version`, `gh auth status` | Install hint (`brew install gh`, `winget install GitHub.cli`), then the user runs `! gh auth login`; or show manual steps for Phase 4 |
 | gitleaks, lefthook, pre-commit, ruff, golangci-lint etc. missing | `<tool> --version` | Show the install command for the OS and package manager; add it as a dev dependency where the ecosystem supports it (ask first); or skip the local part and keep the CI part |
 | Docker missing (gitleaks in CI uses it) | — | No local impact: CI runners have Docker. Only mention it |
