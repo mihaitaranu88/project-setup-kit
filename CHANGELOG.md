@@ -39,6 +39,19 @@ Fixes from the end-to-end runs:
 - The `AGENTS.md` template no longer has a stack block.
 - A race in the `.ai-kit.json` lock is fixed: a parallel command could fail when the lock disappeared between the check and the stat.
 
+Python and other non-Node projects (found by the FastAPI run):
+- The lockfile check (item 19) supports uv (`uv sync --check`), bundler (`bundle check`), poetry and pipenv.
+- Every language's CI job ends with the precheck step. The script is called through `$GITHUB_WORKSPACE`, so it also works from a monorepo part's folder.
+- `lint-ratchet.yml`, `coverage.yml` and the audit job set up uv as well as Node. diff-cover runs through `pipx`.
+- The README covers pip-audit and pip-licenses for uv projects, with SPDX caveats.
+- The uv CI job pins `python-version`. Before, uv picked the newest Python allowed by `requires-python`, so CI tested Python 3.14 while developers used 3.12.
+- precheck's "new source without a test" rule understands Python, Go, PHP, Ruby, Java, Kotlin and C# layouts.
+- Phase 5 runs CI tools that are missing locally in Docker when it can. Otherwise it lists them under "check on the first PR".
+- Links to pending files no longer pass the docs check in CI.
+- New guidance for an item 42 project without a migrate command, and for creating `.env.example` when it is missing.
+- A troubleshooting entry covers kit commands that keep asking for approval. The agent should not write wrapper scripts around them.
+- On the FastAPI test repo the generated gates worked: mypy and the new-code coverage check caught gaps in code the agent itself had written.
+
 New eval cases: a full `minimal` run that checks the files written and recorded, `update-from-0.3.0`, and the 4 new language fixtures.
 
 ## 0.4.0

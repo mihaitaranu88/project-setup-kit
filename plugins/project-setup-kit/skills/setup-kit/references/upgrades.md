@@ -57,3 +57,6 @@ When every section is done, record the new version: any `kit.mjs` write command 
 - `kit.mjs config add` no longer copies the template's `note` fields into the project's `.ai-kit/config.json`. Offer to delete the `note` keys left there by older versions.
 - `kit.mjs pending list|apply` only picks up `*.pending` files.
 - `bundle-size.yml` keeps the checkout token (`persist-credentials: true`), because size-limit fetches the base branch itself; without it, private repositories fail. If the project's copy has `persist-credentials: false`, offer this fix first.
+- Item 21: every language's CI job now ends with the precheck step (item 15), called as `node "$GITHUB_WORKSPACE/.ai-kit/scripts/precheck.mjs"` with `fetch-depth: 0`. Offer it for non-Node jobs, and offer to fix a Node job that calls the script with a relative path from a part's sub-folder. The uv job also pins `python-version`: offer it when the project's job has none.
+- Item 19: uv, poetry, pipenv and bundler projects can now use the lockfile check. Offer it if item 19 was recorded as `pending` or `not-applicable` for one of them.
+- Items 16, 23 and 28: `lint-ratchet.yml`, `coverage.yml` and the audit job can set up uv. If a Python project's copy was adapted by hand, compare it with the template and offer only what is missing.
