@@ -35,6 +35,7 @@ const USAGE = `Usage (run from the project root):
   node kit.mjs plugin-rules <plugin> [--via <package>] [--config recommended]   print a lint plugin's preset rules (resolving it through a framework package)
   node kit.mjs verify                                           list recorded files that changed or disappeared
   node kit.mjs templates [prefix]                               list template paths
+  node kit.mjs uninstall-plan <id>|--all [--json]                 what removing one item, or the whole kit, would delete, edit or keep (changes nothing)
   node kit.mjs outdated [--json]                                 list pinned actions, tool images and MCP packages that have a newer release
   node kit.mjs pin-actions <workflow>... [--check]               pin every GitHub action to a full commit SHA (the tag stays as a note); --check only lists unpinned ones`;
 
@@ -101,6 +102,37 @@ export function withStateLock(root, action) {
 export function listFilesRecursively(path) {
   if (!statSync(path).isDirectory()) return [path];
   return readdirSync(path).flatMap(name => listFilesRecursively(join(path, name)));
+}
+
+export function planRemoval(state, root, { item = null, all = false } = {}) {
+  const removing = all ? null : String(item);
+  const plan = { delete: [], ask: [], editMerged: [], keepShared: [], missing: [] };
+  for (const [path, info] of Object.entries(state.files ?? {}).sort(([a], [b]) => a.localeCompare(b))) {
+    const owners = (info.items ?? []).map(String);
+    if (!all && !owners.includes(removing)) continue;
+    const others = all ? [] : owners.filter(owner => owner !== removing && ['installed', 'partial'].includes(state.items?.[owner]?.state ?? 'installed'));
+    const absolute = join(root, path);
+    if (!existsSync(absolute)) plan.missing.push(path);
+    else if (others.length > 0) plan.keepShared.push({ path, sharedWith: others });
+    else if (info.hash === 'merged') plan.editMerged.push(path);
+    else if (hashFile(absolute) === info.hash) plan.delete.push(path);
+    else plan.ask.push(path);
+  }
+  const settings = all ? (state.settings?.done ?? []) : [];
+  return { ...plan, settings, items: all ? Object.keys(state.items ?? {}).filter(id => ['installed', 'partial'].includes(state.items[id].state)) : [removing] };
+}
+
+export function formatRemovalPlan(plan) {
+  const section = (title, entries, render = entry => entry) => (entries.length > 0 ? [`${title}:`, ...entries.map(entry => `  ${render(entry)}`)] : []);
+  return [
+    `Items: ${plan.items.join(', ') || 'none'}`,
+    ...section('Delete (unchanged since the kit wrote them)', plan.delete),
+    ...section('Ask first (changed by the team since the kit wrote them; show the diff)', plan.ask),
+    ...section('Edit, do not delete (shared files the kit merged into: remove only the kit blocks or entries)', plan.editMerged),
+    ...section('Keep (still used by another installed item; remove only this item\'s part)', plan.keepShared, entry => `${entry.path} (items ${entry.sharedWith.join(', ')})`),
+    ...section('Already gone', plan.missing),
+    ...section('Repository settings to undo by hand (Phase 4 did these)', plan.settings),
+  ].join('\n');
 }
 
 export function recordFiles(state, { root, item, paths, merged = false }) {
@@ -371,6 +403,13 @@ function runCommand(argv, cwd, root) {
     const [plugin] = positional(args);
     if (!plugin) throw new Error(USAGE);
     return JSON.stringify(readPluginRules(root, plugin, readOption(args, 'via'), readOption(args, 'config') ?? 'recommended'), null, 2);
+  }
+  if (command === 'uninstall-plan') {
+    const [item] = positional(args);
+    const all = args.includes('--all');
+    if (!item && !all) throw new Error(USAGE);
+    const plan = planRemoval(loadState(root), root, { item, all });
+    return args.includes('--json') ? JSON.stringify(plan, null, 2) : formatRemovalPlan(plan);
   }
   if (command === 'outdated') {
     return checkOutdated(root).then(results => (args.includes('--json') ? JSON.stringify(results, null, 2) : formatOutdated(results)));

@@ -1,6 +1,6 @@
 ---
 name: setup-kit
-description: Set up or update AI-agent files (optionally with a minimal, team or strict profile), agent guards, lint/CI checks and repository settings in the current project, in any language. Use when the user runs /setup-kit, asks to "set up the kit", "add AGENTS.md and checks", "configure agent hooks / CI / Sonar / Dependabot for this repo", or wants to update or remove an item the kit installed earlier. Supports `/setup-kit`, `/setup-kit update`, `/setup-kit remove <item>` and `/setup-kit status`.
+description: Set up or update AI-agent files (optionally with a minimal, team or strict profile), agent guards, lint/CI checks and repository settings in the current project, in any language. Use when the user runs /setup-kit, asks to "set up the kit", "add AGENTS.md and checks", "configure agent hooks / CI / Sonar / Dependabot for this repo", or wants to update or remove an item the kit installed earlier. Supports `/setup-kit`, `/setup-kit update`, `/setup-kit remove <item>`, `/setup-kit remove --all`, `/setup-kit status` and `/setup-kit doctor`.
 ---
 
 # Project setup kit
@@ -35,7 +35,8 @@ All paths are relative to this skill's folder.
 - `/setup-kit minimal|team|strict`: full setup with that profile preselected (`profiles.md`).
 - `/setup-kit` with an existing `.ai-kit.json`: same as `update`.
 - `/setup-kit update`: read `references/upgrades.md` and apply every section newer than `kitVersion` in `.ai-kit.json`, oldest first; compare the files in `.ai-kit.json` with the current templates; show what changed; never overwrite a file whose current hash differs from the recorded hash without showing the diff and asking. Then offer items that were never answered.
-- `/setup-kit remove <id>`: list the files and settings recorded for that item, ask for confirmation, remove them, update `AGENTS.md` and `.ai-kit.json`.
+- `/setup-kit remove <id>`: run `node <skill-dir>/scripts/kit.mjs uninstall-plan <id>`, show the plan, ask for confirmation, then remove the files, update `AGENTS.md` and `.ai-kit.json` (state-file.md, "remove").
+- `/setup-kit remove --all`: the same for the whole kit with `uninstall-plan --all`. Order: hook wiring and git hooks first (so no hook points at a deleted script), then kit blocks in merged files (`AGENTS.md`, `.claude/settings.json`, `.mcp.json`, manifests), then the files in "Delete", then each file in "Ask first" one by one, then `.ai-kit/` and finally `.ai-kit.json`. List the repository settings to undo by hand; never change them yourself.
 - `/setup-kit status`: print the items with their state (installed, declined, not applicable, pending), the repository settings still pending, and the files waiting in `.ai-kit/pending/` (`kit.mjs pending list`). Change nothing.
 - `/setup-kit doctor`: check that every installed item still works and change nothing: Node version, `.ai-kit/config.json` parses, each recorded file exists and its hash matches, every guard answers a sample payload correctly, hook wiring points to existing scripts, git hooks are installed, the last CI runs of kit workflows passed (`gh run list`), and pinned versions are current (`node <skill-dir>/scripts/kit.mjs outdated`: actions, tool images such as gitleaks, actionlint, zizmor, trivy, hadolint, and MCP packages; for a MAJOR change read the release notes before proposing it). Report each problem with the fix from `troubleshooting.md` and ask before applying any.
 

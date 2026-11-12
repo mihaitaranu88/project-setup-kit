@@ -104,8 +104,9 @@ You still see the full list before anything is installed, and you still review t
 | `/setup-kit` | Full setup, or an update if the project already has `.ai-kit.json` |
 | `/setup-kit update` | Offers improved templates (with diffs) and items you have not answered yet; never overwrites files you changed |
 | `/setup-kit status` | Shows the state of every item and changes nothing |
-| `/setup-kit doctor` | Checks that everything still works (guards answer, hooks are wired, CI is green) and proposes fixes |
+| `/setup-kit doctor` | Checks that everything still works (guards answer, hooks are wired, CI is green, pinned versions are current) and proposes fixes |
 | `/setup-kit remove <id>` | Removes one item's files, rules and settings |
+| `/setup-kit remove --all` | Removes everything the kit installed; files your team changed are asked about one by one |
 
 **Empty folder?** The kit offers to create the project skeleton with your framework's official generator first (`create-next-app`, `laravel new`, `uv init`, …), or to set up only what does not need code yet and finish the rest on the next run.
 
@@ -206,7 +207,7 @@ Plus, only for the items you accept: hook wiring in `.claude/settings.json`, git
 
 **Can I run it without anyone answering prompts?** Yes, with `claude -p "/setup-kit"`. Claude Code then refuses writes to protected paths such as `.claude/` and `.mcp.json`, so those files are staged in `.ai-kit/pending/`. You finish them later with `node <plugin>/skills/setup-kit/scripts/kit.mjs pending apply`.
 
-**How do I undo it?** `/setup-kit remove <id>` for one item, or revert the changed files with git.
+**How do I undo it?** `/setup-kit remove <id>` for one item, `/setup-kit remove --all` for everything, or revert the changed files with git.
 
 ## Related tools
 
@@ -222,7 +223,7 @@ npm run check
 
 This runs a consistency check (every template, guide and profile row exists, versions match, icon present) and about 210 tests for the guard, check and CLI scripts.
 
-`npm run eval` runs the plugin's eval suite with `claude plugin eval` (it uses tokens). The cases in `plugins/project-setup-kit/evals/` are generated from `tests/fixtures/*/expected.json` and check the analysis of each fixture project, plus the behavior that matters most: the first turn asks one thing with a recommendation, a plain request asks before writing, `status` changes nothing and `remove` asks before deleting. Every case also runs without the plugin, so the report shows how much the kit adds. The **Skill evaluation** workflow does the same on GitHub: run it from the Actions tab, or it runs on every `v*` tag; it needs an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` secret. [`tests/EVAL.md`](tests/EVAL.md) covers the manual walk-through of the full flow.
+`npm run eval` runs the plugin's eval suite with `claude plugin eval` (it uses tokens). The cases in `plugins/project-setup-kit/evals/` are generated from `tests/fixtures/*/expected.json` and check the analysis of each fixture project (TypeScript, Python, PHP, Go, Java, Kotlin, C#, Ruby, Rust, a monorepo and an empty folder), plus the behavior that matters most: the first turn asks one thing with a recommendation, a plain request asks before writing, `status` changes nothing, `remove` asks before deleting and `update` from 0.3.0 offers only what changed. `npm run eval:guards` starts real Claude Code sessions in a project with the guards installed and checks that commits, pushes, `.env` reads, destructive commands, invented packages and edits to the guards themselves are stopped. Every case also runs without the plugin, so the report shows how much the kit adds. The **Skill evaluation** workflow does the same on GitHub: run it from the Actions tab, or it runs on every `v*` tag; it needs an `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` secret. [`tests/EVAL.md`](tests/EVAL.md) covers the manual walk-through of the full flow.
 
 ## License
 

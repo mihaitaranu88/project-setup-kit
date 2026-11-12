@@ -35,3 +35,20 @@ When every section is done, record the new version: any `kit.mjs` write command 
 - Item 43: optional migration lint (squawk, strong_migrations, django-migration-linter). Ask the sub-question.
 - Item 46: optional smoke test on the preview. Ask the sub-question when the project has Playwright or Cypress.
 - Hook runner: `hook-io.mjs` now waits for async guards (needed by deps-guard). If item 47 is installed, `.ai-kit/hooks/hook-io.mjs` must be the 0.4.0 copy.
+
+## 0.5.0
+
+- Item 47: deps-guard and `new-deps.mjs` also check RubyGems (`bundle add`, `gem install`, `Gemfile`) and NuGet (`dotnet add package`, `*.csproj`, `Directory.Packages.props`). They read download counts from pypistats.org, Packagist and crates.io. Private registries are respected: scopes in `.npmrc` are allowed, and replaced default registries are not checked. If item 47 is installed, offer to refresh `.ai-kit/hooks/package-registry.mjs`, `.ai-kit/hooks/deps-guard.mjs` and `.ai-kit/scripts/new-deps.mjs`.
+- Workflows: tools that ran unpinned or on a major only are now exact. Offer one patch per installed workflow:
+  - `govulncheck@v1.9.0`;
+  - `deadcode@v0.52.0`;
+  - `knip@6.45.1`;
+  - `jscpd@5.4.3`;
+  - `vulture==2.16`;
+  - `diff-cover==11.0.1`;
+  - gitleaks `v8.30.1`.
+
+  Then run `kit.mjs outdated` for anything newer.
+- Item 21: new CI fragments for .NET (`ci.dotnet.yml`), Ruby (`ci.ruby.yml`) and Rust (`ci.rust.yml`). If the project has one of these parts and its CI job was written by hand from `languages.md`, offer the template version as a diff.
+- `doctor` and Phase 5 now run `kit.mjs outdated`. Run it once in update mode and offer the results as in Phase 5.
+- `/setup-kit remove --all` and `kit.mjs uninstall-plan` exist; mention them once.

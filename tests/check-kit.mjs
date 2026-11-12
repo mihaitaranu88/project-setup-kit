@@ -54,6 +54,13 @@ for (const line of profiles.split('\n').filter(row => /^\| \d+ \| /.test(row))) 
   const cells = line.split('|').slice(3, 6).map(cell => cell.trim().split(/[ ,]/)[0]);
   if (cells.some(cell => !['yes', 'no', 'ask'].includes(cell))) problems.push(`profiles.md has an invalid answer: ${line}`);
 }
+const upgrades = read('plugins/project-setup-kit/skills/setup-kit/references/upgrades.md');
+for (const [, version] of read('CHANGELOG.md').matchAll(/^## (\d+\.\d+\.\d+)/gm)) {
+  if (version !== '0.1.0' && !upgrades.includes(`## ${version}`)) problems.push(`upgrades.md has no section for ${version}: update mode would not know what changed`);
+}
+const readmeCount = read('README.md').match(/(\d+) items in (\d+) groups/);
+if (!readmeCount || Number(readmeCount[1]) !== itemIds.length) problems.push(`README.md says ${readmeCount?.[1] ?? '?'} items, the catalog has ${itemIds.length}`);
+if (!skill.includes(`catalog of ${itemIds.length} items`)) problems.push(`SKILL.md does not say "catalog of ${itemIds.length} items"`);
 if (!existsSync(join(ROOT, 'plugins/project-setup-kit/.claude-plugin/icon.png'))) problems.push('plugin icon is missing');
 
 if (problems.length > 0) {
